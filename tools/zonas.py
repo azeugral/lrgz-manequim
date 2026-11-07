@@ -223,8 +223,9 @@ def main():
         borrao = cv2.GaussianBlur(grande, (0, 0), 1.4)
         grande = cv2.addWeighted(grande, 1.35, borrao, -0.35, 0)
         alfa = cv2.resize(sil, (w * ESC, h * ESC), interpolation=cv2.INTER_CUBIC)
-        alfa = cv2.erode(alfa, np.ones((3, 3), np.uint8))
-        alfa = cv2.GaussianBlur(alfa, (0, 0), 1.2)
+        alfa = cv2.GaussianBlur(alfa, (0, 0), 4.5)   # alisa o serrilhado da mascara
+        alfa = np.clip((alfa.astype(np.float32) - 135) / 40, 0, 1)
+        alfa = (alfa * 255).astype(np.uint8)
         rgba = np.dstack([grande, alfa])
         cv2.imwrite(f"../assets/{g}.webp", rgba, [cv2.IMWRITE_WEBP_QUALITY, 88])
     json.dump(saida, open("../assets/zonas.json", "w"), separators=(",", ":"))

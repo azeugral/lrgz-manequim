@@ -97,6 +97,7 @@
     cam.style.width = Z.W + "px"; cam.style.height = Z.H + "px";
     ovl.setAttribute("viewBox", `0 0 ${Z.W} ${Z.H}`);
     cam.style.visibility = "visible";
+    img.style.clipPath = estreito() ? (VW === "f" ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)") : "none";
     $("#zo").hidden = !(D.r && !tudo);
     $("#vistas").hidden = !estreito();
     $$("#vistas button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === VW));
@@ -113,7 +114,7 @@
   }
   function caixaGeral() {
     const m = (b, w, h) => [b[0] - w * 0.06, b[1] - h * 0.03, w * 1.12, h * 1.06];
-    if (estreito()) { const b = Z.box[VW]; return m(b, b[2] - b[0], b[3] - b[1]); }
+    if (estreito()) { const b = Z.box[VW], r = m(b, b[2] - b[0], b[3] - b[1]); r[3] *= 1.1; return r; }
     const f = Z.box.f, b = Z.box.b, x0 = Math.min(f[0], b[0]), y0 = Math.min(f[1], b[1]), x1 = Math.max(f[2], b[2]), y1 = Math.max(f[3], b[3]);
     return m([x0, y0, x1, y1], x1 - x0, y1 - y0);
   }
