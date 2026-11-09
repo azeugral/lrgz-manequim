@@ -26,7 +26,7 @@ MOLDE = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {fontes}
-<link rel="stylesheet" href="{base}app.css">
+<link rel="stylesheet" href="{base}app.css?v=3">
 <style>body{{background:{cor}}}</style>
 </head>
 <body>
@@ -45,7 +45,7 @@ MOLDE = """<!doctype html>
 </main>
 <footer class="rod">Orçamento por <a href="https://lrgz.com.br">L R G Z</a></footer>
 <script>{inicio}</script>
-<script src="{base}app.js"></script>
+<script src="{base}app.js?v=3"></script>
 </body>
 </html>
 """
