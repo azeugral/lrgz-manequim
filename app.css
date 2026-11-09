@@ -50,16 +50,16 @@ h1 { margin: 0; font: 800 clamp(36px, 6vw, 76px)/1.02 var(--f-titulo); color: va
 .seg button[aria-pressed="true"] { background: var(--destaque); color: var(--sobre-destaque); }
 #seg-v { display: none; }
 
-.palco-wrap { position: relative; background: var(--palco); border: 1px solid var(--linha); }
+.palco-wrap { position: relative; background: var(--estudio, var(--palco)); border: 1px solid var(--linha); }
 .palco-wrap::before, .palco-wrap::after { content: ""; position: absolute; top: 50%; width: 1px; height: 0; }
 #palco { display: block; width: 100%; height: min(76vh, 820px); touch-action: manipulation; -webkit-user-select: none; user-select: none; }
 #corpo { pointer-events: none; }
-.z { fill: rgba(0, 0, 0, 0); stroke: var(--contorno); stroke-opacity: .75; stroke-width: 1; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .25s var(--ease); }
+.z { fill: rgba(0, 0, 0, 0); stroke: rgba(20, 18, 16, .38); stroke-opacity: 1; stroke-width: 1; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .25s var(--ease); }
 .z:hover, .z:focus-visible { fill: var(--zona); outline: none; }
 .z.on { fill: rgba(0, 0, 0, 0); }
 .hz { fill: var(--selecao); stroke: var(--destaque); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none; animation: pulso 2.6s ease-in-out infinite; }
 @keyframes pulso { 50% { fill-opacity: .7; } }
-#rotulos text { fill: var(--apoio); font-family: var(--f-rotulo); letter-spacing: .2em; text-anchor: middle; }
+#rotulos text { fill: rgba(20, 18, 16, .55); font-family: var(--f-rotulo); letter-spacing: .2em; text-anchor: middle; }
 .legenda { margin: 16px 0 0; min-height: 1.6em; text-align: center; font: 700 clamp(16px, 2vw, 20px)/1.3 var(--f-titulo); color: var(--titulo, var(--texto)); transition: color .2s; }
 .legenda.pre { color: var(--apoio); }
 .painel { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 14px; }
@@ -100,7 +100,7 @@ h3:first-child { margin-top: 0; }
 .grade button[aria-pressed="true"] small { color: inherit; opacity: .8; }
 
 .resumo { display: grid; grid-template-columns: 180px minmax(0, 1fr); border: 1px solid var(--linha); margin-bottom: 26px; }
-.mini-wrap { background: var(--palco); border-right: 1px solid var(--linha); display: grid; place-items: center; min-height: 180px; }
+.mini-wrap { background: var(--estudio, var(--palco)); border-right: 1px solid var(--linha); display: grid; place-items: center; min-height: 180px; }
 .mini { width: 100%; height: 100%; aspect-ratio: 1; display: block; }
 .mini-vazio { padding: 16px; text-align: center; color: var(--apoio); font-size: 14px; }
 .resumo dl { margin: 0; }

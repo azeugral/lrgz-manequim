@@ -35,6 +35,7 @@
   // lado: true = a zona existe dos dois lados (A/B); false = zona central (C).
   // det: detalhe opcional; k é a subzona destacada no corpo quando existe.
   const Zs = [
+    { id: "rosto", nome: "Rosto", v: "f", k: "face.{S}", lado: true, det: [["Testa"], ["Têmpora"], ["Bochecha"], ["Queixo"]] },
     { id: "pescoco", nome: "Pescoço", v: "f", k: "neck.{S}", lado: false },
     { id: "ombro", nome: "Ombro", v: "f", k: "sh.{S}", lado: true, det: [["Frente", "sh.{S}"], ["Lateral", "sh.{S}.out"]] },
     { id: "peito", nome: "Peito", v: "f", k: "chest.{S}", lado: true, det: [["Centro", "chest.{S}.in"], ["Lateral", "chest.{S}.out"]] },
@@ -51,6 +52,7 @@
     { id: "canela", nome: "Canela", v: "f", k: "shin.{S}", lado: true },
     { id: "tornozelo", nome: "Tornozelo", v: "f", k: "ankle.{S}", lado: true },
     { id: "pe", nome: "Peito do pé", v: "f", k: "foot.{S}", lado: true },
+    { id: "cabeca", nome: "Cabeça", v: "b", k: "head.{S}", lado: false, det: [["Topo"], ["Atrás da orelha"], ["Nuca alta"]] },
     { id: "nuca", nome: "Nuca", v: "b", k: "neck.{S}", lado: false },
     { id: "ombro-post", nome: "Ombro (atrás)", v: "b", k: "sh.{S}", lado: true },
     { id: "triceps", nome: "Tríceps", v: "b", k: "arm.{S}", lado: true },
@@ -90,7 +92,8 @@
   const regiaoTexto = () => { const r = regiao(); return r.reg + (r.lado ? " · lado " + r.lado.toLowerCase() : ""); };
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json"))).json();
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=3"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=3`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -105,11 +108,12 @@
     if (!D.z) return [];
     const z = zona(D.z), s = sDe(z.lado ? D.lado : "", z.v);
     const d = D.det && z.det && z.det.find((x) => x[0] === D.det);
-    return [(d ? d[1] : z.k).replace("{S}", s)];
+    return [(d && d[1] ? d[1] : z.k).replace("{S}", s)];
   }
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=3`)); }
+    if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
     // no celular só a vista atual aparece: corta a outra metade da imagem

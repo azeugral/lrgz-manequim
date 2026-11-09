@@ -1,3 +1,6 @@
 tools/prova*.jpg
 __pycache__/
 .claude/
+tools/src/v1/
+tools/grid*.jpg
+tools/ver.jpg
