@@ -5,6 +5,7 @@
   "site": "https://maronez.com.br",
   "siteRotulo": "maronez.com.br",
   "dominios": [
+    "orcamento.maronez.com.br",
     "manequim.maronez.com.br"
   ],
   "modo": "whatsapp",
@@ -30,7 +31,8 @@
   "textos": {
     "titulo": "Bora\ntatuar",
     "sub": "Toque no corpo, escolha o estilo e mande pro WhatsApp. Leva menos de um minuto.",
-    "saudacao": "Olá, Maronez! Vim pelo site e quero fazer um orçamento.",
+    "ola": "Olá, Maronez!",
+    "fecho": "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.",
     "ideia": "Ex.: algo que siga o músculo, sem figura."
   },
   "estilos": [

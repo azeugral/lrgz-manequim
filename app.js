@@ -92,8 +92,8 @@
   const regiaoTexto = () => { const r = regiao(); return r.reg + (r.lado ? " · lado " + r.lado.toLowerCase() : ""); };
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json?v=3"))).json();
-  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=3`); });   // troca de corpo sem atraso
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=4"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=4`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -112,7 +112,7 @@
   }
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=3`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=4`)); }
     if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
@@ -189,12 +189,18 @@
 
   /* ---------- Mensagem ---------- */
   const nomeLimpo = () => (D.nome || "").trim().replace(/\s+/g, " ");
+  // Mensagem curta e escaneável: apresentação numa linha, ficha em blocos, pergunta de fechamento.
   function mensagem() {
-    const r = regiao(), L = [C.textos.saudacao, "*NOVO PEDIDO DE ORÇAMENTO*", `*Nome:* ${nomeLimpo() || "-"}`, `*Idade:* ${(D.idade || "").trim() || "-"}`, `*Corpo:* ${D.g}`, `*Local:* ${r.reg}`];
-    if (r.lado) L.push(`*Lado:* ${r.lado}`);
-    L.push(`*Estilo:* ${D.estilo || "-"}`, `*Tamanho:* ${D.tam || "-"}`);
-    if (D.cor) L.push(`*Cor:* ${D.cor}`);
-    L.push(`*Ideia:* ${(D.ideia || "").trim() || "-"}`, "Gostaria de saber sobre disponibilidade e os próximos passos.");
+    const r = regiao(), T = C.textos, nome = nomeLimpo(), idade = (D.idade || "").trim();
+    const ola = T.ola || `Olá, ${C.nome}!`;
+    const quem = nome ? `Aqui é *${nome}*${idade ? `, ${idade} anos` : ""}.` : "";
+    const local = [r.reg, r.lado ? "lado " + r.lado.toLowerCase() : "", D.z ? "corpo " + D.g.toLowerCase() : ""].filter(Boolean).join(" · ");
+    const ficha = [["LOCAL", local], ["ESTILO", D.estilo], ["TAMANHO", D.tam], ["COR", D.cor]].filter((x) => x[1]).map(([k, v]) => `*${k}:* ${v}`);
+    const ideia = (D.ideia || "").trim();
+    const L = [`${ola} ${quem} Vim pelo site e quero um orçamento.`.replace(/\s+/g, " ").trim(), ficha.join("\n")];
+    if (ideia) L.push(`*IDEIA:*\n_${ideia.replace(/[_*~]/g, "")}_`);
+    L.push(T.fecho || "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.");
+    L.push(`_Pedido feito em ${location.host || C.siteRotulo}_`);
     return L.join("\n\n");
   }
   const destino = () => (C.modo === "dm" ? C.instagram : `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(mensagem())}`);
