@@ -150,6 +150,15 @@ input:focus, textarea:focus { border-color: var(--texto); outline: none; }
 .rod { margin-top: 30px; padding: 24px var(--lado); border-top: 1px solid var(--linha); color: var(--apoio); font: 400 12px var(--f-rotulo); text-align: center; }
 .rod a { color: var(--texto); text-decoration: none; }
 
+/* ---------- embutido no site do cliente (?embed=1) ---------- */
+.embed .topo, .embed .cab, .embed #pr, .embed .acao, .embed .rod, .embed #tela { display: none !important; }
+.embed body { overflow: hidden; }
+.embed main { max-width: none; padding: 10px 10px 14px; }
+.embed .local { padding-top: 0; }
+.embed .controles { margin-bottom: 10px; }
+.embed #palco { height: 470px; }
+.embed .legenda { margin-top: 10px; }
+
 /* ---------- celular ---------- */
 @media (max-width: 760px) {
   .topo { gap: 10px; padding: 12px var(--lado); }
@@ -160,6 +169,7 @@ input:focus, textarea:focus { border-color: var(--texto); outline: none; }
   #seg-v { display: inline-grid; }
   .seg button { min-width: 0; padding: 10px 14px; }
   #palco { height: 60svh; }
+  .embed #palco { height: 420px; }
   .estilos, .estilos.g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .estilos.g3 > :last-child:nth-child(odd) { grid-column: 1 / -1; aspect-ratio: auto; height: 120px; }
   .grade, .grade.g3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -144,3 +144,11 @@ h3 em { color: var(--lo); }
 .pular { min-height: 46px; padding: 10px 18px; background: var(--paper-2); color: var(--ink); border: 0; box-shadow: var(--relevo); font: 500 15px/1 var(--f-ui); text-transform: none; letter-spacing: .02em; }
 .pular:hover { filter: brightness(1.04); }
 .pular:active { box-shadow: var(--afundado); }
+
+/* embutido no formulário do samtto.com.br: tela escura dentro da janela, sem barra própria */
+.embed .topo { display: none; }
+.embed body::before { display: none; }
+.embed .palco-wrap { box-shadow: var(--campo); padding: 2px; }
+.embed .palco-wrap::before { display: none; }
+.embed .palco-wrap #palco { box-shadow: none; }
+.embed .legenda { font-size: 15px; }

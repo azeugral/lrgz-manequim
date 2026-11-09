@@ -23,8 +23,11 @@
     document.head.append(l);
   }
   const url = (p) => (/^https?:/.test(p) ? p : BASE + p);
+  // ?embed=1: só o manequim, dentro do formulário do site do cliente (iframe). Avisa o site a cada toque.
+  const EMBED = new URLSearchParams(location.search).has("embed");
+  if (EMBED) document.documentElement.classList.add("embed");
   document.documentElement.dataset.cliente = C.slug;
-  if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=7"; k.dataset.skin = "1"; document.head.append(k); }
+  if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=8"; k.dataset.skin = "1"; document.head.append(k); }
   const ico = $("link[rel=icon]"); if (ico) ico.href = url(C.favicon || C.logo);
   document.title = C.titulo || `Orçamento | ${C.nome}`;
   $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
@@ -85,7 +88,8 @@
   let D = vazio();
   try { D = { ...D, ...JSON.parse(sessionStorage.getItem(CH) || "{}") }; } catch (_) {}
   D.sel = (D.sel || []).filter((x) => zona(x.split(":")[0]));
-  const salvar = () => { try { sessionStorage.setItem(CH, JSON.stringify(D)); } catch (_) {} };
+  const avisa = () => EMBED && parent !== window && parent.postMessage({ manequim: 1, local: D.sel.length || outroTxt() ? regiaoTexto() : "", corpo: D.sel.length ? D.g : "", altura: document.documentElement.scrollHeight }, "*");
+  const salvar = () => { try { sessionStorage.setItem(CH, JSON.stringify(D)); } catch (_) {} avisa(); };
   let passo = 0, VW = "f";
 
   // Link com escolha pronta: ?estilo=Flash&tamanho=Pequena&desenho=Morcego (ex.: vindo dos disponíveis do site)
@@ -120,8 +124,8 @@
   }
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json?v=7"))).json();
-  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=7`); });   // troca de corpo sem atraso
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=8"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=8`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -137,7 +141,7 @@
   const caminhosSel = () => D.sel.map((x) => { const [id, s] = x.split(":"), z = zona(id); return Zg().z[z.v][z.k.replace("{S}", s)] || ""; }).filter(Boolean);
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=7`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=8`)); }
     if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
@@ -183,7 +187,7 @@
     let h = "";
     if (D.sel.length) h += `<p class="dica">${estreito() ? "Toque" : "Clique"} em outra região para somar, ou na mesma para tirar.</p><div class="seg"><button data-limpa>Limpar</button></div>`;
     h += `<details class="outro"${D.outro ? " open" : ""}><summary>Não achou o local?</summary><input id="f-outro" maxlength="60" placeholder="Ex.: dedos, atrás da orelha, costela até o quadril" value="${esc(D.outro)}"></details>`;
-    if (!D.sel.length && !outroTxt()) h += `<button class="pular" data-pular>Ainda não sei o local, decido depois</button>`;
+    if (!EMBED && !D.sel.length && !outroTxt()) h += `<button class="pular" data-pular>Ainda não sei o local, decido depois</button>`;
     return h;
   }
   function telaProjeto() {
@@ -331,6 +335,7 @@
   addEventListener("resize", () => { if (estreito() !== largura) { largura = estreito(); if (passo === 0) desenhaPalco(); } });
 
   if (D.sel.length) VW = zona(D.sel[D.sel.length - 1].split(":")[0]).v;
-  passo = Math.min(D.max || 0, localPronto() ? (projetoPronto() ? 2 : 1) : 0);
+  passo = EMBED ? 0 : Math.min(D.max || 0, localPronto() ? (projetoPronto() ? 2 : 1) : 0);
   pinta(false);
+  if (EMBED) { new ResizeObserver(avisa).observe(document.body); avisa(); }
 })();
