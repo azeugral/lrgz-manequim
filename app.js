@@ -202,7 +202,8 @@
     h += r ? `<span class="rt">Região selecionada</span><h3 class="sel">${esc(r.nome)}</h3>` : "<h3>Onde será a tatuagem?</h3>";
     if (r) r.ops.forEach((o, j) => { h += `<div class="sub" role="group">${o.map((x) => `<button data-li="${j}" data-lv="${x}" aria-pressed="${D.p[j] === x}">${x}</button>`).join("")}</div>`; });
     h += `<button class="ls" data-act="ls" aria-expanded="false" aria-controls="rgl">Escolher pela lista</button><div class="rgl" id="rgl" hidden>${REG.map((x) => `<button data-r="${x.id}" aria-pressed="${D.r === x.id}">${x.nome}</button>`).join("")}</div>`;
-    return h + (r ? continuar(regiaoPronta()) : "");
+    const dica = r && !regiaoPronta() ? `<p class="dica">Marque uma opção em cada linha acima para continuar.</p>` : "";
+    return h + (r ? continuar(regiaoPronta()) + dica : "");
   }
   function telaEstilo() {
     const tiles = C.estilos.map((e, i) => `<button data-v="${esc(e.nome)}" aria-pressed="${D.estilo === e.nome}">${e.foto ? `<img src="${esc(url(e.foto))}" alt="" loading="lazy">` : `<img class="sem" src="${esc(url(C.logo))}" alt="">`}<i>${["I", "II", "III", "IV", "V", "VI"][i] || ""}</i><span>${esc(e.nome)}</span></button>`).join("");

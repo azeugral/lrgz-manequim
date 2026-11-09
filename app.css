@@ -110,6 +110,7 @@ h3 { margin: 0 0 24px; font: 800 clamp(26px, 3.2vw, 46px)/1.08 var(--f-titulo); 
 .err { margin: 5px 0 0; color: var(--erro, #e5484d); font-size: 13px; }
 .nota { margin: 18px 0 0; padding-left: 13px; border-left: 2px solid var(--destaque); color: var(--apoio); font-size: 14px; }
 .nota b { color: var(--texto); }
+.dica { margin: 10px 0 0; color: var(--apoio); font-size: 14px; }
 .copiado { margin: 12px 0 0; color: var(--apoio); font-size: 14px; }
 .rod { padding: 26px var(--lado); border-top: 1px solid var(--linha); color: var(--apoio); font: 400 12px var(--f-rotulo); text-align: center; }
 .rod a { color: var(--texto); text-decoration: none; }
