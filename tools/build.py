@@ -22,11 +22,12 @@ MOLDE = """<!doctype html>
 <meta property="og:description" content="{descricao}">
 <meta property="og:type" content="website">
 {og}
-<link rel="icon" href="{icone}">
+{icones}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {fontes}
 <link rel="stylesheet" href="{base}app.css?v=6">
+{skin}
 <style>body{{background:{cor}}}</style>
 </head>
 <body>
@@ -60,8 +61,28 @@ def pagina(c, base, inicio, og_url=""):
     if c.get("og"):
         og.append(f'<meta property="og:image" content="{c["og"]}">')
     fontes = f'<link rel="stylesheet" href="{html.escape(c["fontes"])}" data-fontes="1">' if c.get("fontes") else ""
+    icones = f'<link rel="icon" href="{base + (c.get("favicon") or c["logo"])}">'
+    if c.get("icone192"):
+        icones += f'\n<link rel="apple-touch-icon" href="{base + c["icone192"]}">'
+    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=6" data-skin="1">' if c.get("css") else ""
     return MOLDE.format(titulo=html.escape(titulo), descricao=html.escape(desc), cor=c["tema"].get("fundo", "#0d0d0d"),
-                        og="\n".join(og), icone=base + c["logo"], fontes=fontes, base=base, inicio=inicio)
+                        og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
+
+
+MIDDLEWARE = """// Gerado por tools/build.py. Nao editar a mao.
+// Na raiz de um dominio de cliente, serve a pagina dele (titulo, favicon, previa e CSS certos).
+const HOSTS = __HOSTS__;
+export async function onRequest(ctx) {
+  const u = new URL(ctx.request.url);
+  const slug = HOSTS[u.hostname];
+  if (slug && (u.pathname === "/" || u.pathname === "/index.html")) {
+    u.pathname = `/${slug}/`;
+    const r = await ctx.env.ASSETS.fetch(new Request(u.toString(), ctx.request));
+    return new Response(r.body, r);
+  }
+  return ctx.next();
+}
+"""
 
 
 def main():
@@ -79,6 +100,9 @@ def main():
     inicio = f'window.MANEQUIM_BASE="./";window.MANEQUIM_HOSTS={json.dumps(hosts)};'
     with open("index.html", "w", encoding="utf8", newline="\n") as s:
         s.write(pagina({**primeiro, "titulo": "Orçamento", "og": ""}, "./", inicio))
+    os.makedirs("functions", exist_ok=True)
+    with open("functions/_middleware.js", "w", encoding="utf8", newline="\n") as s:
+        s.write(MIDDLEWARE.replace("__HOSTS__", json.dumps(hosts)))
     print("clientes:", len(glob.glob("clientes/*.json")), "dominios:", hosts)
 
 

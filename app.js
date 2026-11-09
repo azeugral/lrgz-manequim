@@ -23,6 +23,9 @@
     document.head.append(l);
   }
   const url = (p) => (/^https?:/.test(p) ? p : BASE + p);
+  document.documentElement.dataset.cliente = C.slug;
+  if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=6"; k.dataset.skin = "1"; document.head.append(k); }
+  const ico = $("link[rel=icon]"); if (ico) ico.href = url(C.favicon || C.logo);
   document.title = C.titulo || `Orçamento | ${C.nome}`;
   $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
   $("#marca").textContent = C.nome;
@@ -106,6 +109,7 @@
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
+  if (ZONAS.F && ZONAS.F.fundo) document.documentElement.style.setProperty("--estudio", ZONAS.F.fundo);   // resumo certo mesmo abrindo direto no passo 3
 
   function caixa() {
     const Z = Zg(), pad = (b) => { const w = b[2] - b[0], h = b[3] - b[1]; return [b[0] - w * 0.08, b[1] - h * 0.03, w * 1.16, h * 1.1]; };

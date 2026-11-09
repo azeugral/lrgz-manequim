@@ -11,6 +11,9 @@
   "whatsapp": "5592994075239",
   "instagram": "https://www.instagram.com/ssamtto/",
   "logo": "clientes/samtto/logo.webp",
+  "favicon": "clientes/samtto/favicon-32.png",
+  "icone192": "clientes/samtto/icon-192.png",
+  "css": "clientes/samtto/skin.css",
   "og": "https://samtto.com.br/assets/img/og-samtto-desktop.jpg",
   "fontes": "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500&family=Rubik+Dirt&family=IBM+Plex+Sans:wght@400;500;600&display=swap",
   "tema": {
@@ -31,17 +34,29 @@
     "f-rotulo": "\"Pixelify Sans\", ui-monospace, monospace"
   },
   "textos": {
-    "titulo": "Marca teu\nlugar",
+    "titulo": "Monte sua tattoo",
     "sub": "Toca no corpo, escolhe o estilo e manda pro WhatsApp do Samtto. Menos de um minuto.",
     "ola": "Salve, Samtto!",
     "fecho": "Tem data livre nas próximas semanas? Se precisar, mando referência por aqui.",
     "ideia": "Ex.: hannya cyber com tribal vermelho, fechando o antebraço."
   },
   "estilos": [
-    { "nome": "Flash", "foto": "clientes/samtto/flash.jpg" },
-    { "nome": "Encomenda", "foto": "clientes/samtto/encomenda.jpg" },
-    { "nome": "Freehand", "foto": "clientes/samtto/freehand.jpg" },
-    { "nome": "Projeto grande", "foto": "clientes/samtto/projeto.jpg" }
+    {
+      "nome": "Flash",
+      "foto": "clientes/samtto/flash.jpg"
+    },
+    {
+      "nome": "Encomenda",
+      "foto": "clientes/samtto/encomenda.jpg"
+    },
+    {
+      "nome": "Freehand",
+      "foto": "clientes/samtto/freehand.jpg"
+    },
+    {
+      "nome": "Projeto grande",
+      "foto": "clientes/samtto/projeto.jpg"
+    }
   ],
   "tamanhos": [
     "Pequena · até 10 cm",
