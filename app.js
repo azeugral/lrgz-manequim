@@ -26,8 +26,17 @@
   document.title = C.titulo || `Orçamento | ${C.nome}`;
   $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
   $("#marca").textContent = C.nome;
-  if (C.site) { $("#voltar").href = C.site; $("#voltar").textContent = C.siteRotulo || "Site"; $("#voltar").hidden = false; }
-  if (C.instagram) { $("#insta").href = C.instagram; $("#insta").textContent = "@" + C.instagram.replace(/\/+$/, "").split("/").pop(); $("#insta").hidden = false; }
+  // Topo: Instagram e site oficial como links claros (ícone + rótulo + endereço); no celular só o ícone.
+  const ICO = {
+    insta: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" class="p"/></svg>',
+    site: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z"/></svg>',
+  };
+  const linkTopo = (el, href, ico, rot, val) => {
+    el.href = href; el.hidden = false; el.setAttribute("aria-label", `${rot}: ${val}`);
+    el.innerHTML = `${ICO[ico]}<span><small>${esc(rot)}</small>${esc(val)}</span><i aria-hidden="true">↗</i>`;
+  };
+  if (C.instagram) linkTopo($("#insta"), C.instagram, "insta", "Instagram", "@" + C.instagram.replace(/\/+$/, "").split("/").pop());
+  if (C.site) linkTopo($("#voltar"), C.site, "site", "Site oficial", C.siteRotulo || C.site.replace(/^https?:\/\//, ""));
   $("#t-titulo").innerHTML = esc(C.textos.titulo).replace(/\n/g, "<br>");
   $("#t-sub").textContent = C.textos.sub;
 
@@ -92,8 +101,8 @@
   const regiaoTexto = () => { const r = regiao(); return r.reg + (r.lado ? " · lado " + r.lado.toLowerCase() : ""); };
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json?v=4"))).json();
-  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=4`); });   // troca de corpo sem atraso
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=5"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=5`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -112,7 +121,7 @@
   }
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=4`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=5`)); }
     if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
