@@ -26,7 +26,7 @@ MOLDE = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {fontes}
-<link rel="stylesheet" href="{base}app.css?v=8">
+<link rel="stylesheet" href="{base}app.css?v=9">
 {skin}
 <style>body{{background:{cor}}}</style>
 </head>
@@ -36,7 +36,7 @@ MOLDE = """<!doctype html>
 <div class="cab"><h1 id="t-titulo"></h1><p class="lead" id="t-sub"></p></div>
 <ol class="pr" id="pr"></ol>
 <section id="local" class="local" aria-label="Escolha o local da tatuagem">
-<div class="controles"><div class="seg" id="seg-g" role="group" aria-label="Corpo"><button data-g="Feminino">Feminino</button><button data-g="Masculino">Masculino</button></div><div class="seg" id="seg-v" role="group" aria-label="Vista"><button data-v="f">Frente</button><button data-v="b">Costas</button></div></div>
+<div class="controles"><div class="grupo"><span class="rot">Corpo</span><div class="seg" id="seg-g" role="group" aria-label="Corpo"><button data-g="Feminino">Feminino</button><button data-g="Masculino">Masculino</button></div></div><div class="grupo" id="grupo-v"><span class="rot">Vista</span><div class="seg" id="seg-v" role="group" aria-label="Vista"><button data-v="f">Frente</button><button data-v="b">Costas</button></div></div></div>
 <div class="palco-wrap"><svg id="palco" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Manequim: toque na região da tatuagem"><defs><clipPath id="cv"><rect id="cvr"/></clipPath></defs><image id="corpo" clip-path="url(#cv)"/><g id="zonas"></g><g id="sel"></g><g id="rotulos"></g></svg></div>
 <p class="legenda" id="legenda" aria-live="polite"></p>
 <div class="painel" id="painel"></div>
@@ -46,7 +46,7 @@ MOLDE = """<!doctype html>
 </main>
 <footer class="rod">Orçamento por <a href="https://lrgz.com.br">L R G Z</a></footer>
 <script>{inicio}</script>
-<script src="{base}app.js?v=8"></script>
+<script src="{base}app.js?v=9"></script>
 </body>
 </html>
 """
@@ -64,7 +64,7 @@ def pagina(c, base, inicio, og_url=""):
     icones = f'<link rel="icon" href="{base + (c.get("favicon") or c["logo"])}">'
     if c.get("icone192"):
         icones += f'\n<link rel="apple-touch-icon" href="{base + c["icone192"]}">'
-    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=8" data-skin="1">' if c.get("css") else ""
+    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=9" data-skin="1">' if c.get("css") else ""
     return MOLDE.format(titulo=html.escape(titulo), descricao=html.escape(desc), cor=c["tema"].get("fundo", "#0d0d0d"),
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 

@@ -152,3 +152,13 @@ h3 em { color: var(--lo); }
 .embed .palco-wrap::before { display: none; }
 .embed .palco-wrap #palco { box-shadow: none; }
 .embed .legenda { font-size: 15px; }
+
+/* controles: Corpo e Vista em dois grupos rotulados; botões colados dentro do grupo (alternador do Win98) */
+.controles { gap: 10px 28px; }
+.grupo .rot { font: 500 12px var(--f-ui); color: var(--paper-dim); letter-spacing: .08em; text-transform: uppercase; }
+.grupo .seg { gap: 0; }
+.grupo .seg button { min-width: 104px; }
+@media (max-width: 760px) {
+  .controles { gap: 10px 16px; }
+  .grupo .seg button { min-width: 0; padding: 10px 12px; }
+}

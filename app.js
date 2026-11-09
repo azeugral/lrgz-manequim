@@ -27,7 +27,7 @@
   const EMBED = new URLSearchParams(location.search).has("embed");
   if (EMBED) document.documentElement.classList.add("embed");
   document.documentElement.dataset.cliente = C.slug;
-  if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=8"; k.dataset.skin = "1"; document.head.append(k); }
+  if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=9"; k.dataset.skin = "1"; document.head.append(k); }
   const ico = $("link[rel=icon]"); if (ico) ico.href = url(C.favicon || C.logo);
   document.title = C.titulo || `Orçamento | ${C.nome}`;
   $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
@@ -124,8 +124,8 @@
   }
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json?v=8"))).json();
-  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=8`); });   // troca de corpo sem atraso
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=9"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=9`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -138,10 +138,11 @@
     return pad([Math.min(f[0], b[0]), Math.min(f[1], b[1]), Math.max(f[2], b[2]), Math.max(f[3], b[3])]);
   }
   // caminhos SVG das regiões marcadas
-  const caminhosSel = () => D.sel.map((x) => { const [id, s] = x.split(":"), z = zona(id); return Zg().z[z.v][z.k.replace("{S}", s)] || ""; }).filter(Boolean);
+  // so = só a vista "f" ou "b" (celular/embutido estreito mostra uma vista por vez)
+  const caminhosSel = (so) => D.sel.map((x) => { const [id, s] = x.split(":"), z = zona(id); return so && z.v !== so ? "" : Zg().z[z.v][z.k.replace("{S}", s)] || ""; }).filter(Boolean);
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=8`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=9`)); }
     if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
@@ -162,7 +163,7 @@
       });
     });
     gz.innerHTML = html;
-    gs.innerHTML = caminhosSel().map((d) => `<path class="hz" d="${d}"/>`).join("");
+    gs.innerHTML = caminhosSel(estreito() ? VW : "").map((d) => `<path class="hz" d="${d}"/>`).join("");
     // rótulos de vista no desktop
     const r = $("#rotulos");
     if (estreito()) { r.innerHTML = ""; }

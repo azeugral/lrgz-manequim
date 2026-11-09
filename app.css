@@ -52,13 +52,14 @@ h1 { margin: 0; font: 800 clamp(36px, 6vw, 76px)/1.02 var(--f-titulo); color: va
 
 /* ---------- local: manequim ---------- */
 .local { padding-top: clamp(22px, 3vw, 34px); }
-.controles { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; }
+.controles { display: flex; justify-content: center; align-items: flex-end; gap: 10px 32px; margin-bottom: 16px; }
+.grupo { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--linha); }
 .seg button { min-width: 112px; background: none; border: 0; padding: 11px 18px; font: 500 12px var(--f-rotulo); text-transform: uppercase; letter-spacing: .06em; color: var(--apoio); transition: background-color .3s var(--ease), color .3s var(--ease); }
 .seg button + button { border-left: 1px solid var(--linha); }
 .seg button:hover { color: var(--texto); }
 .seg button[aria-pressed="true"] { background: var(--destaque); color: var(--sobre-destaque); }
-#seg-v { display: none; }
+#grupo-v { display: none; }
 
 .palco-wrap { position: relative; background: var(--estudio, var(--palco)); border: 1px solid var(--linha); }
 .palco-wrap::before, .palco-wrap::after { content: ""; position: absolute; top: 50%; width: 1px; height: 0; }
@@ -166,7 +167,8 @@ input:focus, textarea:focus { border-color: var(--texto); outline: none; }
   .topo > a span, .topo > a i { display: none; }
   .lead { font-size: 15px; }
   .controles { flex-wrap: wrap; }
-  #seg-v { display: inline-grid; }
+  #grupo-v { display: flex; }
+  .controles { gap: 10px 20px; }
   .seg button { min-width: 0; padding: 10px 14px; }
   #palco { height: 60svh; }
   .embed #palco { height: 420px; }
