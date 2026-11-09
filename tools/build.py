@@ -30,21 +30,18 @@ MOLDE = """<!doctype html>
 <style>body{{background:{cor}}}</style>
 </head>
 <body>
-<header class="topo"><div><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
+<header class="topo"><a id="insta" target="_blank" rel="noopener" hidden></a><div class="marca"><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
 <main>
-<h1 id="t-titulo"></h1>
-<p class="lead" id="t-sub"></p>
+<div class="cab"><h1 id="t-titulo"></h1><p class="lead" id="t-sub"></p></div>
 <ol class="pr" id="pr"></ol>
-<div class="pb" id="pb">
-<div id="stp"></div>
-<div class="viz" id="viz">
-<div class="stg" id="stg"><div class="cam" id="cam"><img id="corpo" alt="Manequim de frente e de costas"><svg id="ovl" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
-<button class="zo" id="zo" hidden>Ver o corpo todo</button>
-<div class="vistas" id="vistas" role="group" aria-label="Vista do corpo" hidden><button data-v="f">Frente</button><button data-v="b">Costas</button></div>
-<div class="emp" id="emp"><span>Primeiro passo</span><b>Escolha o corpo</b><p>Selecione feminino ou masculino para ver o modelo e marcar onde vai a tatuagem.</p></div>
-<div class="cp" id="cp" hidden></div>
-</div>
-</div>
+<section id="local" class="local" aria-label="Escolha o local da tatuagem">
+<div class="controles"><div class="seg" id="seg-g" role="group" aria-label="Corpo"><button data-g="Feminino">Feminino</button><button data-g="Masculino">Masculino</button></div><div class="seg" id="seg-v" role="group" aria-label="Vista"><button data-v="f">Frente</button><button data-v="b">Costas</button></div></div>
+<div class="palco-wrap"><svg id="palco" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Manequim: toque na região da tatuagem"><defs><clipPath id="cv"><rect id="cvr"/></clipPath></defs><image id="corpo" clip-path="url(#cv)"/><g id="zonas"></g><g id="sel"></g><g id="rotulos"></g></svg></div>
+<p class="legenda" id="legenda" aria-live="polite"></p>
+<div class="painel" id="painel"></div>
+</section>
+<section id="tela" class="tela" hidden></section>
+<div class="acao" id="acao"></div>
 </main>
 <footer class="rod">Orçamento por <a href="https://lrgz.com.br">L R G Z</a></footer>
 <script>{inicio}</script>

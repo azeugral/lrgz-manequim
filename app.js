@@ -1,12 +1,14 @@
-/* LRGZ Manequim: orçamento de tatuagem tocando no corpo.
+/* LRGZ Manequim v2: orçamento de tatuagem em 3 passos.
+   1 Local (um toque no corpo já define região e lado) · 2 Projeto · 3 Enviar.
    Um código só; cada cliente é um JSON em clientes/<slug>.json. */
 (async () => {
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const NS = "http://www.w3.org/2000/svg";
 
-  /* ---------- Cliente: pela página gerada ou pelo domínio ---------- */
+  /* ---------- Cliente ---------- */
   const BASE = window.MANEQUIM_BASE || "./";
   let C = window.MANEQUIM_CLIENTE;
   if (!C) {
@@ -14,229 +16,185 @@
     if (!slug) { location.replace("https://lrgz.com.br/"); return; }
     C = await (await fetch(`${BASE}clientes/${slug}.json`)).json();
   }
-  const raiz = document.documentElement.style;
-  Object.entries(C.tema).forEach(([k, v]) => raiz.setProperty("--" + k, v));
+  Object.entries(C.tema).forEach(([k, v]) => document.documentElement.style.setProperty("--" + k, v));
   if (C.fontes && !$("link[data-fontes]")) {
     const l = document.createElement("link");
     l.rel = "stylesheet"; l.href = C.fontes; l.dataset.fontes = "1";
     document.head.append(l);
   }
-  document.title = C.titulo || `Orçamento | ${C.nome}`;
   const url = (p) => (/^https?:/.test(p) ? p : BASE + p);
-
-  $("#logo").src = url(C.logo);
-  $("#logo").alt = C.nome;
+  document.title = C.titulo || `Orçamento | ${C.nome}`;
+  $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
   $("#marca").textContent = C.nome;
-  $("#voltar").href = C.site || "#";
-  $("#voltar").textContent = C.siteRotulo || "Ver o site";
-  $("#voltar").hidden = !C.site;
+  if (C.site) { $("#voltar").href = C.site; $("#voltar").textContent = C.siteRotulo || "Site"; $("#voltar").hidden = false; }
+  if (C.instagram) { $("#insta").href = C.instagram; $("#insta").textContent = "@" + C.instagram.replace(/\/+$/, "").split("/").pop(); $("#insta").hidden = false; }
   $("#t-titulo").innerHTML = esc(C.textos.titulo).replace(/\n/g, "<br>");
   $("#t-sub").textContent = C.textos.sub;
 
-  /* ---------- Regiões do corpo ---------- */
-  const LD = ["Esquerdo", "Direito"], LF = ["Esquerda", "Direita"];
-  const ehLado = (o) => o === LD || o === LF;
-  const IO = { Interno: ".in", Externo: ".out" };
-  const REG = [
-    { id: "ombro", nome: "Ombro", ops: [["Frontal", "Lateral", "Posterior"], LD], pick: (p) => ({ v: p[0] === "Posterior" ? "b" : "f", k: [p[0] === "Lateral" ? "sh.{S}.out" : "sh.{S}"] }), hit: { f: ["sh.{S}"], b: ["sh.{S}"] } },
-    { id: "braco", nome: "Braço", ops: [["Bíceps", "Tríceps"], ["Interno", "Externo"], LD], pick: (p) => ({ v: p[0] === "Tríceps" ? "b" : "f", k: ["arm.{S}" + (IO[p[1]] || "")] }), hit: { f: ["arm.{S}"], b: ["arm.{S}"] } },
-    { id: "antebraco", nome: "Antebraço", ops: [["Interno", "Externo"], LD], pick: (p) => ({ v: "f", k: ["fore.{S}" + (IO[p[0]] || "")] }), hit: { f: ["fore.{S}"], b: ["fore.{S}"] } },
-    { id: "mao", nome: "Mão", ops: [["Palma", "Dorso", "Lateral"], LD], pick: (p) => ({ v: p[0] === "Dorso" ? "b" : "f", k: [p[0] === "Lateral" ? "hand.{S}.out" : "hand.{S}"] }), hit: { f: ["hand.{S}"], b: ["hand.{S}"] } },
-    { id: "peito", nome: "Peito", ops: [LD, ["Interno", "Externo"]], pick: (p) => ({ v: "f", k: ["chest.{S}" + (IO[p[1]] || "")] }), hit: { f: ["chest.{S}"] } },
-    { id: "costela", nome: "Costela", ops: [LF, ["Frontal", "Lateral"]], pick: (p) => ({ v: "f", k: [p[1] ? "rib.{S}." + (p[1] === "Frontal" ? "fr" : "lat") : "rib.{S}"] }), hit: { f: ["rib.{S}"] } },
-    { id: "abdomen", nome: "Abdômen", ops: [["Superior", "Central", "Inferior"], LF], pick: (p) => { const i = ["Superior", "Central", "Inferior"].indexOf(p[0]); return { v: "f", k: i >= 0 ? [`abd.${i + 1}.{S}`] : ["abd.1.{S}", "abd.2.{S}", "abd.3.{S}"] }; }, hit: { f: ["abd.1.{S}", "abd.2.{S}", "abd.3.{S}"] } },
-    { id: "costas", nome: "Costas", ops: [["Alta", "Média", "Lombar"], LF], pick: (p) => { const i = ["Alta", "Média", "Lombar"].indexOf(p[0]); return { v: "b", k: i >= 0 ? [`back.${i + 1}.{S}`] : ["back.1.{S}", "back.2.{S}", "back.3.{S}"] }; }, hit: { b: ["back.1.{S}", "back.2.{S}"] } },
-    { id: "lombar", nome: "Lombar", ops: [LF], pick: () => ({ v: "b", k: ["back.3.{S}"] }), hit: { b: ["back.3.{S}"] } },
-    { id: "quadril", nome: "Quadril", ops: [["Frontal", "Posterior"], LD], pick: (p) => ({ v: p[0] === "Posterior" ? "b" : "f", k: ["hip.{S}"] }), hit: { f: ["hip.{S}"], b: ["hip.{S}"] } },
-    { id: "coxa", nome: "Coxa", ops: [["Frontal", "Lateral", "Posterior", "Interna"], LF], pick: (p) => ({ v: p[0] === "Posterior" ? "b" : "f", k: ["thigh.{S}" + ({ Lateral: ".out", Interna: ".in" }[p[0]] || "")] }), hit: { f: ["thigh.{S}"], b: ["thigh.{S}"] } },
-    { id: "joelho", nome: "Joelho", ops: [["Frontal", "Lateral", "Posterior"], LD], pick: (p) => ({ v: p[0] === "Posterior" ? "b" : "f", k: ["knee.{S}" + (p[0] === "Lateral" ? ".out" : "")] }), hit: { f: ["knee.{S}"], b: ["knee.{S}"] } },
-    { id: "panturrilha", nome: "Panturrilha", ops: [["Frontal", "Lateral", "Posterior", "Interna"], LF], pick: (p) => ({ v: p[0] === "Posterior" || !p[0] ? "b" : "f", k: ["shin.{S}" + ({ Lateral: ".out", Interna: ".in" }[p[0]] || "")] }), hit: { b: ["shin.{S}"] } },
-    { id: "canela", nome: "Canela", ops: [["Frontal", "Lateral"], LF], pick: (p) => ({ v: "f", k: ["shin.{S}" + (p[0] === "Lateral" ? ".out" : "")] }), hit: { f: ["shin.{S}"] } },
-    { id: "pe", nome: "Pé", ops: [["Superior", "Lateral", "Tornozelo"], LD], pick: (p) => ({ v: "f", k: [p[0] === "Tornozelo" ? "ankle.{S}" : p[0] === "Lateral" ? "foot.{S}.out" : "foot.{S}"] }), hit: { f: ["foot.{S}", "ankle.{S}"], b: ["foot.{S}", "ankle.{S}"] } },
+  /* ---------- Zonas: cada uma já é região final ---------- */
+  // lado: true = a zona existe dos dois lados (A/B); false = zona central (C).
+  // det: detalhe opcional; k é a subzona destacada no corpo quando existe.
+  const Zs = [
+    { id: "pescoco", nome: "Pescoço", v: "f", k: "neck.{S}", lado: false },
+    { id: "ombro", nome: "Ombro", v: "f", k: "sh.{S}", lado: true, det: [["Frente", "sh.{S}"], ["Lateral", "sh.{S}.out"]] },
+    { id: "peito", nome: "Peito", v: "f", k: "chest.{S}", lado: true, det: [["Centro", "chest.{S}.in"], ["Lateral", "chest.{S}.out"]] },
+    { id: "braco", nome: "Braço", v: "f", k: "arm.{S}", lado: true, det: [["Interno", "arm.{S}.in"], ["Externo", "arm.{S}.out"]] },
+    { id: "antebraco-int", nome: "Antebraço interno", v: "f", k: "fore.{S}", lado: true },
+    { id: "palma", nome: "Palma da mão", v: "f", k: "hand.{S}", lado: true },
+    { id: "costela", nome: "Costela", v: "f", k: "rib.{S}", lado: true, det: [["Frente", "rib.{S}.fr"], ["Lateral", "rib.{S}.lat"]] },
+    { id: "abd-sup", nome: "Abdômen superior", v: "f", k: "abd.1.{S}", lado: false },
+    { id: "abd-cen", nome: "Abdômen central", v: "f", k: "abd.2.{S}", lado: false },
+    { id: "abd-inf", nome: "Abdômen inferior", v: "f", k: "abd.3.{S}", lado: false },
+    { id: "quadril", nome: "Quadril", v: "f", k: "hip.{S}", lado: true },
+    { id: "coxa", nome: "Coxa", v: "f", k: "thigh.{S}", lado: true, det: [["Frente", "thigh.{S}"], ["Lateral", "thigh.{S}.out"], ["Interna", "thigh.{S}.in"]] },
+    { id: "joelho", nome: "Joelho", v: "f", k: "knee.{S}", lado: true },
+    { id: "canela", nome: "Canela", v: "f", k: "shin.{S}", lado: true },
+    { id: "tornozelo", nome: "Tornozelo", v: "f", k: "ankle.{S}", lado: true },
+    { id: "pe", nome: "Peito do pé", v: "f", k: "foot.{S}", lado: true },
+    { id: "nuca", nome: "Nuca", v: "b", k: "neck.{S}", lado: false },
+    { id: "ombro-post", nome: "Ombro (atrás)", v: "b", k: "sh.{S}", lado: true },
+    { id: "triceps", nome: "Tríceps", v: "b", k: "arm.{S}", lado: true },
+    { id: "antebraco-ext", nome: "Antebraço externo", v: "b", k: "fore.{S}", lado: true },
+    { id: "dorso-mao", nome: "Dorso da mão", v: "b", k: "hand.{S}", lado: true },
+    { id: "costas-alta", nome: "Costas alta", v: "b", k: "back.1.{S}", lado: false },
+    { id: "costas-media", nome: "Costas média", v: "b", k: "back.2.{S}", lado: false },
+    { id: "lombar", nome: "Lombar", v: "b", k: "back.3.{S}", lado: false },
+    { id: "gluteo", nome: "Glúteo", v: "b", k: "hip.{S}", lado: true },
+    { id: "posterior-coxa", nome: "Posterior da coxa", v: "b", k: "thigh.{S}", lado: true },
+    { id: "atras-joelho", nome: "Atrás do joelho", v: "b", k: "knee.{S}", lado: true },
+    { id: "panturrilha", nome: "Panturrilha", v: "b", k: "shin.{S}", lado: true, det: [["Centro", "shin.{S}"], ["Lateral", "shin.{S}.out"], ["Interna", "shin.{S}.in"]] },
+    { id: "tornozelo-post", nome: "Tornozelo (atrás)", v: "b", k: "ankle.{S}", lado: true },
+    { id: "calcanhar", nome: "Calcanhar", v: "b", k: "foot.{S}", lado: true },
   ];
-  const reg = (id) => REG.find((r) => r.id === id);
-  /* A = lado esquerdo da imagem. De frente o lado direito da pessoa fica em A; de costas, em B. */
-  const ladoNaImagem = (rotulo, v) => ((rotulo[0] === "D") === (v === "f") ? "A" : "B");
-  function chaves(r, p) {
-    const li = r.ops.findIndex(ehLado), o = r.pick(p), rot = li >= 0 ? p[li] : "";
-    const lados = rot ? [ladoNaImagem(rot, o.v)] : ["A", "B"];
-    return { v: o.v, keys: o.k.flatMap((t) => lados.map((s) => t.replace("{S}", s))) };
-  }
+  const zona = (id) => Zs.find((z) => z.id === id);
+  // A = lado esquerdo da imagem: de frente é o lado direito da pessoa; de costas, o esquerdo.
+  const ladoDe = (s, v) => (s === "C" ? "" : (s === "A") === (v === "f") ? "Direito" : "Esquerdo");
+  const sDe = (lado, v) => (!lado ? "C" : (lado === "Direito") === (v === "f") ? "A" : "B");
 
   /* ---------- Estado ---------- */
-  const PASSOS = [["corpo", "Corpo"], ["local", "Local"], ["estilo", "Estilo"], ["enviar", "Enviar"]];
-  const COM_PALCO = { corpo: 1, local: 1, enviar: 1 };
-  const vazio = () => ({ g: "", r: "", p: [], estilo: "", tam: "", cor: "", ideia: "", nome: "", idade: "", max: 0 });
-  const CH = "manequim:" + C.slug;
+  const PASSOS = ["Local", "Projeto", "Enviar"];
+  const vazio = () => ({ g: "Feminino", z: "", lado: "", det: "", outro: "", estilo: "", tam: "", cor: "", ideia: "", nome: "", idade: "", max: 0 });
+  const CH = "manequim2:" + C.slug;
   let D = vazio();
   try { D = { ...D, ...JSON.parse(sessionStorage.getItem(CH) || "{}") }; } catch (_) {}
   const salvar = () => { try { sessionStorage.setItem(CH, JSON.stringify(D)); } catch (_) {} };
-  let passo = 0, VW = "f", tudo = 0, hover = "", previa = null;
+  let passo = 0, VW = "f";
 
-  const regiaoPronta = () => { const r = reg(D.r); return !!r && r.ops.every((_, i) => D.p[i]); };
-  function partes() {
-    const r = reg(D.r);
-    if (!r) return { reg: "-", lado: "" };
-    const li = r.ops.findIndex(ehLado);
-    return { reg: [r.nome, ...D.p.filter((x, i) => i !== li && x)].join(" · "), lado: li >= 0 ? D.p[li] : "" };
+  const localPronto = () => !!(D.z || (D.outro || "").trim());
+  const projetoPronto = () => !!(D.estilo && D.tam);
+  function regiao() {
+    if (!D.z) return { reg: (D.outro || "").trim() || "-", lado: "" };
+    const z = zona(D.z);
+    return { reg: z.nome + (D.det ? " · " + D.det : ""), lado: D.lado };
   }
-  const textoRegiao = () => { const g = partes(); return [g.reg.toUpperCase(), g.lado.toUpperCase()].filter(Boolean).join(" · "); };
+  const regiaoTexto = () => { const r = regiao(); return r.reg + (r.lado ? " · lado " + r.lado.toLowerCase() : ""); };
 
-  /* ---------- Palco: câmera por transform, zonas em SVG por cima ---------- */
+  /* ---------- Palco ---------- */
   const ZONAS = await (await fetch(url("assets/zonas.json"))).json();
-  const stg = $("#stg"), cam = $("#cam"), img = $("#corpo"), ovl = $("#ovl"), cp = $("#cp");
-  let Z = null;
-  const estreito = () => matchMedia("(max-width: 820px)").matches;
+  const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
+  const estreito = () => matchMedia("(max-width: 760px)").matches;
+  const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
 
-  function preparaPalco() {
-    $("#emp").hidden = !!D.g;
-    if (!D.g) { cam.style.visibility = "hidden"; Z = null; ovl.innerHTML = ""; cp.hidden = true; $("#vistas").hidden = true; $("#zo").hidden = true; return; }
-    const g = D.g === "Feminino" ? "F" : "M";
-    Z = ZONAS[g];
-    if (img.dataset.g !== g) { img.dataset.g = g; img.src = url(`assets/${g}.webp`); }
-    cam.style.width = Z.W + "px"; cam.style.height = Z.H + "px";
-    ovl.setAttribute("viewBox", `0 0 ${Z.W} ${Z.H}`);
-    cam.style.visibility = "visible";
-    img.style.clipPath = estreito() ? (VW === "f" ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)") : "none";
-    $("#zo").hidden = !(D.r && !tudo);
-    $("#vistas").hidden = !estreito();
-    $$("#vistas button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === VW));
+  function caixa() {
+    const Z = Zg(), pad = (b) => { const w = b[2] - b[0], h = b[3] - b[1]; return [b[0] - w * 0.08, b[1] - h * 0.03, w * 1.16, h * 1.1]; };
+    if (estreito()) return pad(Z.box[VW]);
+    const f = Z.box.f, b = Z.box.b;
+    return pad([Math.min(f[0], b[0]), Math.min(f[1], b[1]), Math.max(f[2], b[2]), Math.max(f[3], b[3])]);
   }
-  function enquadra(rc, seco) {
-    const sw = stg.clientWidth || 300, sh = stg.clientHeight || 300;
-    let [x, y, w, h] = rc;
-    const cx = x + w / 2, cy = y + h / 2;
-    if (w / h < sw / sh) w = (h * sw) / sh; else h = (w * sh) / sw;
-    const s = sw / w;
-    if (seco) cam.style.transition = "none";
-    cam.style.transform = `translate(${sw / 2 - cx * s}px,${sh / 2 - cy * s}px) scale(${s})`;
-    if (seco) { void cam.offsetWidth; cam.style.transition = ""; }
+  function chavesSel() {
+    if (!D.z) return [];
+    const z = zona(D.z), s = sDe(z.lado ? D.lado : "", z.v);
+    const d = D.det && z.det && z.det.find((x) => x[0] === D.det);
+    return [(d ? d[1] : z.k).replace("{S}", s)];
   }
-  function caixaGeral() {
-    const m = (b, w, h) => [b[0] - w * 0.06, b[1] - h * 0.03, w * 1.12, h * 1.06];
-    if (estreito()) { const b = Z.box[VW], r = m(b, b[2] - b[0], b[3] - b[1]); r[3] *= 1.1; return r; }
-    const f = Z.box.f, b = Z.box.b, x0 = Math.min(f[0], b[0]), y0 = Math.min(f[1], b[1]), x1 = Math.max(f[2], b[2]), y1 = Math.max(f[3], b[3]);
-    return m([x0, y0, x1, y1], x1 - x0, y1 - y0);
-  }
-  function ajusta(seco) {
-    if (!Z) return;
-    let rc = caixaGeral();
-    const g = $("#hl");
-    if (g && !tudo && g.childNodes.length) {
-      const b = g.getBBox();
-      if (b.width > 1) {
-        const F = Z.box[VW], w = Math.max(b.width * 3.4, (F[2] - F[0]) * 0.72), h = (w * stg.clientHeight) / stg.clientWidth;
-        rc = [b.x + b.width / 2 - w / 2, b.y + b.height / 2 - h / 2, w, h];
-      }
-    }
-    enquadra(rc, seco);
-  }
-  function desenha() {
-    if (!Z) return;
-    const r = reg(D.r), zv = Z.z[VW];
-    let h = "";
-    ["f", "b"].forEach((v) => {
-      const zz = Z.z[v];
-      REG.forEach((x) => (x.hit[v] || []).forEach((tp) => ["A", "B"].forEach((s) => {
-        const k = tp.replace("{S}", s);
-        if (zz[k]) h += `<path class="ht${hover === x.id ? " on" : ""}" data-r="${x.id}" data-s="${s}" data-v="${v}" d="${zz[k]}" tabindex="0" role="button" aria-label="${x.nome} (${v === "f" ? "frente" : "costas"})"/>`;
-      })));
+  function desenhaPalco() {
+    const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp`)); }
+    img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
+    const [x, y, w, h] = caixa();
+    // no celular só a vista atual aparece: corta a outra metade da imagem
+    const meio = (Z.box.f[2] + Z.box.b[0]) / 2, so = estreito(), r0 = $("#cvr");
+    r0.setAttribute("x", so && VW === "b" ? meio : 0); r0.setAttribute("y", 0);
+    r0.setAttribute("width", so ? (VW === "f" ? meio : Z.W - meio) : Z.W); r0.setAttribute("height", Z.H);
+    svg.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
+    let html = "";
+    Zs.forEach((z) => {
+      if (so && z.v !== VW) return;
+      (z.lado ? ["A", "B"] : ["C"]).forEach((s) => {
+        const d = Z.z[z.v][z.k.replace("{S}", s)];
+        if (!d) return;
+        const lado = ladoDe(s, z.v), rot = z.nome + (lado ? " " + lado.toLowerCase() : "");
+        const on = D.z === z.id && (!z.lado || D.lado === lado);
+        html += `<path class="z${on ? " on" : ""}" data-z="${z.id}" data-s="${s}" d="${d}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${rot}"><title>${rot}</title></path>`;
+      });
     });
-    if (r) {
-      const o = chaves(r, D.p);
-      let ks = null;
-      if (o.v === VW) ks = o.keys;
-      else if (r.hit[VW]) {
-        const li = r.ops.findIndex(ehLado), rot = li >= 0 ? D.p[li] : "", ls = rot ? [ladoNaImagem(rot, VW)] : ["A", "B"];
-        ks = r.hit[VW].flatMap((t) => ls.map((s) => t.replace("{S}", s)));
-      }
-      if (ks) h += `<g id="hl">${ks.map((k) => (zv[k] ? `<path class="hz" d="${zv[k]}"/>` : "")).join("")}</g>`;
+    gz.innerHTML = html;
+    const vs = Z.z, ks = chavesSel(), zz = D.z ? vs[zona(D.z).v] : null;
+    gs.innerHTML = ks.map((k) => (zz && zz[k] ? `<path class="hz" d="${zz[k]}"/>` : "")).join("");
+    // rótulos de vista no desktop
+    const r = $("#rotulos");
+    if (estreito()) { r.innerHTML = ""; }
+    else {
+      const yb = Math.max(Z.box.f[3], Z.box.b[3]) + h * 0.045, cx = (b) => (b[0] + b[2]) / 2;
+      r.innerHTML = `<text x="${cx(Z.box.f)}" y="${yb}">FRENTE</text><text x="${cx(Z.box.b)}" y="${yb}">COSTAS</text>`;
+      $$("text", r).forEach((t) => t.setAttribute("font-size", Math.round(h * 0.016)));
     }
-    if (previa && previa.v === VW) h += previa.keys.map((k) => (zv[k] ? `<path class="pv" d="${zv[k]}"/>` : "")).join("");
-    ovl.innerHTML = h;
+    $$("#seg-g button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.g === D.g));
+    $$("#seg-v button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === VW));
+    mostraLegenda();
   }
-  function legenda() {
-    const r = reg(D.r), noLocal = PASSOS[passo][0] === "local";
-    let t = "";
-    if (D.g) t = hover ? reg(hover).nome.toUpperCase() : r ? (noLocal ? "" : "LOCAL: " + textoRegiao()) : "TOQUE NO CORPO PARA ESCOLHER";
-    cp.textContent = t;
-    cp.hidden = !t;
-  }
-  const atualiza = () => { preparaPalco(); desenha(); ajusta(false); legenda(); };
-
-  function escolheRegiao(id, v) {
-    const r = reg(id);
-    tudo = 0;
-    if (D.r !== id) { D.r = id; D.p = r.ops.map(() => ""); }
-    hover = ""; previa = null;
-    VW = v && r.hit[v] ? v : r.hit[VW] ? VW : chaves(r, D.p).v;
-    salvar(); pinta(true); atualiza();
-  }
-  function escolheNivel(j, rot) {
-    const r = reg(D.r);
-    tudo = 0; hover = ""; D.p[j] = rot; previa = null;
-    VW = chaves(r, D.p).v;
-    salvar(); pinta(true); atualiza();
-  }
-  function tocouZona(el) {
-    const id = el.dataset.r, v = el.dataset.v;
-    if (id !== D.r || tudo) return escolheRegiao(id, v);
-    const r = reg(id), li = r.ops.findIndex(ehLado);
-    if (li >= 0) {
-      const pessoa = (el.dataset.s === "A") === (v === "f") ? 1 : 0;
-      if (D.p[li] !== r.ops[li][pessoa]) escolheNivel(li, r.ops[li][pessoa]);
-    }
+  function mostraLegenda(hover) {
+    if (hover) { legenda.textContent = hover; legenda.classList.add("pre"); return; }
+    legenda.classList.remove("pre");
+    legenda.textContent = localPronto() ? regiaoTexto() : (estreito() ? "Toque onde vai a tatuagem" : "Clique onde vai a tatuagem");
   }
 
   /* ---------- Passos ---------- */
-  const voltar = (rot, acao) => `<button class="vt" data-act="${acao}"><span aria-hidden="true">←</span> Voltar <small>${esc(rot)}</small></button>`;
-  const continuar = (ok) => `<div class="fim"><button class="b" data-act="nx"${ok ? "" : " disabled"}>Continuar →</button></div>`;
-  const lista = (itens, chave) => `<div class="op" data-k="${chave}" role="group">${itens.map((o) => `<button data-v="${esc(o)}" aria-pressed="${D[chave] === o}">${esc(o)}</button>`).join("")}</div>`;
-
-  function telaCorpo() {
-    return `<h3>Escolha o corpo.</h3><div class="gen" role="group">${["Feminino", "Masculino"].map((g, i) => `<button data-g="${g}" aria-pressed="${D.g === g}"><b>0${i + 1}</b><span>${g}</span></button>`).join("")}</div>`;
+  function painelLocal() {
+    const z = D.z ? zona(D.z) : null;
+    let h = "";
+    if (z && z.lado) h += `<div class="linha"><span class="rot">Lado</span><div class="seg">${["Esquerdo", "Direito"].map((l) => `<button data-lado="${l}" aria-pressed="${D.lado === l}">${l}</button>`).join("")}</div></div>`;
+    if (z && z.det) h += `<div class="linha"><span class="rot">Detalhe <em>opcional</em></span><div class="seg">${z.det.map((d) => `<button data-det="${d[0]}" aria-pressed="${D.det === d[0]}">${d[0]}</button>`).join("")}</div></div>`;
+    h += `<details class="outro"${D.outro ? " open" : ""}><summary>Não achou o local?</summary><input id="f-outro" maxlength="60" placeholder="Ex.: atrás da orelha, dedos, costela até o quadril" value="${esc(D.outro)}"></details>`;
+    return h;
   }
-  function telaLocal() {
-    const r = reg(D.r);
-    let h = voltar(r ? [r.nome, ...D.p.filter(Boolean)].slice(-1)[0] : "Corpo", "vl");
-    h += r ? `<span class="rt">Região selecionada</span><h3 class="sel">${esc(r.nome)}</h3>` : "<h3>Onde será a tatuagem?</h3>";
-    if (r) r.ops.forEach((o, j) => { h += `<div class="sub" role="group">${o.map((x) => `<button data-li="${j}" data-lv="${x}" aria-pressed="${D.p[j] === x}">${x}</button>`).join("")}</div>`; });
-    h += `<button class="ls" data-act="ls" aria-expanded="false" aria-controls="rgl">Escolher pela lista</button><div class="rgl" id="rgl" hidden>${REG.map((x) => `<button data-r="${x.id}" aria-pressed="${D.r === x.id}">${x.nome}</button>`).join("")}</div>`;
-    const dica = r && !regiaoPronta() ? `<p class="dica">Marque uma opção em cada linha acima para continuar.</p>` : "";
-    return h + (r ? continuar(regiaoPronta()) + dica : "");
-  }
-  function telaEstilo() {
-    const tiles = C.estilos.map((e, i) => `<button data-v="${esc(e.nome)}" aria-pressed="${D.estilo === e.nome}">${e.foto ? `<img src="${esc(url(e.foto))}" alt="" loading="lazy">` : `<img class="sem" src="${esc(url(C.logo))}" alt="">`}<i>${["I", "II", "III", "IV", "V", "VI"][i] || ""}</i><span>${esc(e.nome)}</span></button>`).join("");
-    const cores = C.cores && C.cores.length ? `<span class="rt">Cor <em>(opcional)</em></span>${lista(C.cores, "cor")}` : "";
-    return voltar("Local", "bk") + `<h3>Seu estilo.</h3><div class="op tiles" data-k="estilo" role="group">${tiles}</div><span class="rt">Tamanho</span>${lista(C.tamanhos, "tam")}${cores}` + continuar(D.estilo && D.tam);
+  function telaProjeto() {
+    const tiles = C.estilos.map((e) => `<button data-v="${esc(e.nome)}" aria-pressed="${D.estilo === e.nome}">${e.foto ? `<img src="${esc(url(e.foto))}" alt="" loading="lazy">` : `<span class="sem"><img src="${esc(url(C.logo))}" alt=""></span>`}<b>${esc(e.nome)}</b></button>`).join("");
+    const tams = C.tamanhos.map((t) => { const [n, m] = t.split(" · "); return `<button data-v="${esc(t)}" aria-pressed="${D.tam === t}"><b>${esc(n)}</b>${m ? `<small>${esc(m)}</small>` : ""}</button>`; }).join("");
+    const cores = C.cores && C.cores.length ? `<h3>Cor <em>opcional</em></h3><div class="grade g${C.cores.length}" data-k="cor">${C.cores.map((c) => `<button data-v="${esc(c)}" aria-pressed="${D.cor === c}"><b>${esc(c)}</b></button>`).join("")}</div>` : "";
+    return `<h3>Estilo</h3><div class="estilos g${C.estilos.length}" data-k="estilo">${tiles}</div>
+      <h3>Tamanho</h3><div class="grade g${C.tamanhos.length}" data-k="tam">${tams}</div>${cores}`;
   }
   function telaEnviar() {
-    const g = partes();
-    const chips = [[[D.g, [g.reg, g.lado].filter(Boolean).join(" ")].join(" · "), 1], [D.estilo, 2], [D.tam, 2], [D.cor, 2]].filter((x) => x[0]);
+    const r = regiao();
+    const linhas = [["Local", r.reg + (r.lado ? " · " + r.lado.toLowerCase() : ""), 0], ["Corpo", D.g, 0], ["Estilo", D.estilo, 1], ["Tamanho", D.tam, 1]];
+    if (D.cor) linhas.push(["Cor", D.cor, 1]);
     const canal = C.modo === "dm" ? "Instagram" : "WhatsApp";
-    const nome = C.modo === "dm" ? "Copiar pedido e abrir o Instagram →" : "Enviar pelo WhatsApp →";
-    return voltar("Estilo", "bk") + `<h3>Pronto.</h3><div class="chips">${chips.map((x) => `<button data-step="${x[1]}" aria-label="Alterar: ${esc(x[0])}">${esc(x[0])}</button>`).join("")}</div>
-      <div class="fld"><label class="rt" for="f-nome">Nome completo <em>(obrigatório)</em></label><input id="f-nome" autocomplete="name" autocapitalize="words" maxlength="80" placeholder="Como você se chama?" value="${esc(D.nome)}"><p class="err" id="e-nome" role="alert" hidden></p></div>
-      <div class="fld f2"><label class="rt" for="f-idade">Idade <em>(obrigatório)</em></label><input id="f-idade" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Somente números" value="${esc(D.idade)}"><p class="err" id="e-idade" role="alert" hidden></p></div>
-      <div class="fld"><label class="rt" for="f-ideia">Sua ideia <em>(opcional)</em></label><textarea id="f-ideia" rows="2" placeholder="${esc(C.textos.ideia || "Conte em uma frase o que você imagina.")}">${esc(D.ideia)}</textarea></div>
-      <p class="nota"><b>Depois de enviar o orçamento</b>, mande também as fotos de referência (desenhos, tatuagens e inspirações) na mesma conversa do ${canal}.</p>
-      <div class="fim"><a class="b" id="send" href="#" target="_blank" rel="noopener">${nome}</a><button class="l" data-act="rs">Recomeçar</button></div><p class="copiado" id="copiado" hidden>Pedido copiado. Cole na conversa.</p>`;
+    return `<div class="resumo">
+        <div class="mini-wrap">${D.z ? `<svg class="mini" id="mini" xmlns="${NS}"><image href="${url(`assets/${D.g === "Masculino" ? "M" : "F"}.webp`)}" width="${Zg().W}" height="${Zg().H}"/><g>${chavesSel().map((k) => `<path class="hz" d="${Zg().z[zona(D.z).v][k] || ""}"/>`).join("")}</g></svg>` : `<span class="mini-vazio">${esc(r.reg)}</span>`}</div>
+        <dl>${linhas.map((l) => `<div><dt>${l[0]}</dt><dd>${esc(l[1])}</dd><button class="alt" data-ir="${l[2]}" aria-label="Alterar ${l[0].toLowerCase()}">Alterar</button></div>`).join("")}</dl>
+      </div>
+      <div class="campos">
+        <div class="fld"><label for="f-nome">Nome completo</label><input id="f-nome" autocomplete="name" autocapitalize="words" maxlength="80" placeholder="Como você se chama?" value="${esc(D.nome)}"><p class="err" id="e-nome" role="alert" hidden></p></div>
+        <div class="fld"><label for="f-idade">Idade</label><input id="f-idade" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Somente números" value="${esc(D.idade)}"><p class="err" id="e-idade" role="alert" hidden></p></div>
+      </div>
+      <div class="fld"><label for="f-ideia">Sua ideia <em>opcional</em></label><textarea id="f-ideia" rows="3" placeholder="${esc(C.textos.ideia || "Conte em uma frase o que você imagina.")}">${esc(D.ideia)}</textarea></div>
+      <p class="nota">Depois de enviar, mande as fotos de referência na mesma conversa do ${canal}.</p>
+      <p class="copiado" id="copiado" hidden>Pedido copiado. Cole na conversa do Instagram.</p>`;
   }
 
+  /* ---------- Mensagem ---------- */
   const nomeLimpo = () => (D.nome || "").trim().replace(/\s+/g, " ");
   function mensagem() {
-    const g = partes(), L = [C.textos.saudacao, "*NOVO PEDIDO DE ORÇAMENTO*", `*Nome:* ${nomeLimpo() || "-"}`, `*Idade:* ${(D.idade || "").trim() || "-"}`, `*Modelo:* ${D.g || "-"}`, `*Região:* ${g.reg}`];
-    if (g.lado) L.push(`*Lado:* ${g.lado}`);
+    const r = regiao(), L = [C.textos.saudacao, "*NOVO PEDIDO DE ORÇAMENTO*", `*Nome:* ${nomeLimpo() || "-"}`, `*Idade:* ${(D.idade || "").trim() || "-"}`, `*Corpo:* ${D.g}`, `*Local:* ${r.reg}`];
+    if (r.lado) L.push(`*Lado:* ${r.lado}`);
     L.push(`*Estilo:* ${D.estilo || "-"}`, `*Tamanho:* ${D.tam || "-"}`);
     if (D.cor) L.push(`*Cor:* ${D.cor}`);
-    L.push(`*Observações:* ${(D.ideia || "").trim() || "-"}`, "Gostaria de saber sobre disponibilidade e os próximos passos.");
+    L.push(`*Ideia:* ${(D.ideia || "").trim() || "-"}`, "Gostaria de saber sobre disponibilidade e os próximos passos.");
     return L.join("\n\n");
   }
   const destino = () => (C.modo === "dm" ? C.instagram : `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(mensagem())}`);
-  function erro(k, msg) {
-    const e = $("#e-" + k), i = $("#f-" + k);
-    e.hidden = !msg; e.textContent = msg || ""; i.setAttribute("aria-invalid", msg ? "true" : "false");
-  }
+  function erro(k, msg) { const e = $("#e-" + k), i = $("#f-" + k); e.hidden = !msg; e.textContent = msg || ""; i.setAttribute("aria-invalid", msg ? "true" : "false"); }
   function valida() {
     const n = nomeLimpo(), a = (D.idade || "").trim(), id = parseInt(a, 10);
     const nOk = n.length >= 3 && /^[\p{L}\p{M}][\p{L}\p{M}'’.\- ]*$/u.test(n);
@@ -248,110 +206,97 @@
     return !p;
   }
 
-  function pinta(manter) {
-    const k = PASSOS[passo][0], stp = $("#stp");
-    const topo = manter ? 0 : stp.getBoundingClientRect().top;
-    D.max = Math.max(D.max || 0, passo);
-    $("#pr").innerHTML = PASSOS.map((p, i) => `<li class="${i < passo ? "d" : i === passo ? "on" : ""}"><button data-step="${i}"${i > D.max || i === passo ? " disabled" : ""}${i === passo ? ' aria-current="step"' : ""}><span>0${i + 1}</span>${p[1]}</button></li>`).join("");
-    $("#pb").classList.toggle("v", !!COM_PALCO[k]);
-    $("#pb").dataset.k = k;
-    stp.innerHTML = `<div class="sp${manter ? " nk" : ""}">${{ corpo: telaCorpo, local: telaLocal, estilo: telaEstilo, enviar: telaEnviar }[k]()}</div>`;
-    salvar();
-    if (k === "enviar") $("#send").href = destino();
-    if (COM_PALCO[k]) { preparaPalco(); desenha(); if (!manter) ajusta(true); legenda(); }
-    if (!manter) { const dy = stp.getBoundingClientRect().top - topo; if (Math.abs(dy) > 1) scrollBy({ top: dy, behavior: "instant" }); }
+  /* ---------- Render ---------- */
+  function rodape() {
+    const ok = [localPronto(), projetoPronto(), true][passo];
+    const falta = ["Escolha o local no corpo para continuar.", !D.estilo && !D.tam ? "Escolha o estilo e o tamanho." : !D.estilo ? "Falta escolher o estilo." : "Falta escolher o tamanho.", ""][passo];
+    const nome = passo === 2 ? (C.modo === "dm" ? "Copiar pedido e abrir o Instagram" : "Enviar pelo WhatsApp") : "Continuar";
+    $("#acao").innerHTML = `${passo > 0 ? `<button class="vt" data-act="bk">Voltar</button>` : `<span></span>`}
+      ${passo === 2 ? `<a class="b" id="send" href="${esc(destino())}" target="_blank" rel="noopener">${nome}</a>` : `<button class="b" data-act="nx"${ok ? "" : " disabled"}>${nome}</button>`}
+      <span class="falta">${ok ? "" : falta}</span>`;
   }
-  const irPara = (n) => { passo = n; pinta(); };
+  function pinta(rolar) {
+    D.max = Math.max(D.max || 0, passo);
+    $("#pr").innerHTML = PASSOS.map((p, i) => `<li class="${i < passo ? "d" : i === passo ? "on" : ""}"><button data-ir="${i}"${i > D.max || i === passo ? " disabled" : ""}${i === passo ? ' aria-current="step"' : ""}><span>0${i + 1}</span>${p}</button></li>`).join("");
+    document.body.dataset.passo = passo;
+    $("#local").hidden = passo !== 0;
+    $("#tela").hidden = passo === 0;
+    if (passo === 0) { desenhaPalco(); $("#painel").innerHTML = painelLocal(); }
+    else $("#tela").innerHTML = `<div class="entra">${passo === 1 ? telaProjeto() : telaEnviar()}</div>`;
+    if (passo === 2 && D.z) requestAnimationFrame(enquadraMini);
+    rodape();
+    salvar();
+    if (rolar) $("#pr").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  }
+  function enquadraMini() {
+    const m = $("#mini"); if (!m) return;
+    const p = $("path", m); if (!p) return;
+    const b = p.getBBox(), s = Math.max(b.width, b.height) * 1.9, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+    m.setAttribute("viewBox", `${cx - s / 2} ${cy - s / 2} ${s} ${s}`);
+  }
+  const irPara = (n) => { passo = n; pinta(true); };
+
+  function escolhe(id, s) {
+    const z = zona(id);
+    const lado = z.lado ? ladoDe(s, z.v) : "";
+    if (D.z !== id) D.det = "";
+    D.z = id; D.lado = lado; D.outro = "";
+    salvar(); desenhaPalco(); $("#painel").innerHTML = painelLocal(); rodape();
+  }
 
   /* ---------- Eventos ---------- */
-  $("#stp").addEventListener("click", (e) => {
-    const t = e.target.closest("button");
-    if (!t) return;
-    const d = t.dataset;
-    if (d.step !== undefined) return irPara(+d.step);
-    if (d.g) {
-      D.g = d.g; salvar();
-      $$("#stp .gen button").forEach((b) => b.setAttribute("aria-pressed", b === t));
-      preparaPalco(); desenha(); ajusta(true); legenda();
-      setTimeout(() => { if (passo === 0 && D.g) irPara(1); }, 300);
-      return;
-    }
-    if (d.act === "nx") return irPara(passo + 1);
-    if (d.act === "bk") return irPara(passo - 1);
-    if (d.act === "vl") {
-      let u = -1; D.p.forEach((x, i) => { if (x) u = i; });
-      if (u >= 0) { D.p[u] = ""; VW = chaves(reg(D.r), D.p).v; salvar(); pinta(true); atualiza(); }
-      else if (D.r) { D.r = ""; D.p = []; salvar(); pinta(true); atualiza(); }
-      else irPara(0);
-      return;
-    }
-    if (d.act === "ls") {
-      const l = $("#rgl"), abre = l.hidden;
-      l.hidden = !abre; t.setAttribute("aria-expanded", abre); t.textContent = abre ? "Ocultar a lista" : "Escolher pela lista";
-      return;
-    }
-    if (d.act === "rs") { D = vazio(); VW = "f"; tudo = 0; salvar(); return irPara(0); }
-    if (d.r) return escolheRegiao(d.r);
-    if (d.lv !== undefined) return escolheNivel(+d.li, d.lv);
-    const o = t.closest(".op[data-k]");
-    if (o && d.v) {
-      const c = o.dataset.k;
-      D[c] = D[c] === d.v && c === "cor" ? "" : d.v;
-      salvar();
-      $$("button", o).forEach((b) => b.setAttribute("aria-pressed", D[c] === b.dataset.v));
-      const nx = $('#stp [data-act="nx"]');
-      if (nx) nx.disabled = !(D.estilo && D.tam);
+  gz.addEventListener("click", (e) => { const p = e.target.closest(".z"); if (p) escolhe(p.dataset.z, p.dataset.s); });
+  gz.addEventListener("keydown", (e) => { const p = e.target.closest(".z"); if (p && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); escolhe(p.dataset.z, p.dataset.s); } });
+  gz.addEventListener("mouseover", (e) => { const p = e.target.closest(".z"); if (p) mostraLegenda(p.getAttribute("aria-label")); });
+  gz.addEventListener("mouseleave", () => mostraLegenda());
+  $("#seg-g").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { D.g = b.dataset.g; salvar(); desenhaPalco(); } });
+  $("#seg-v").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { VW = b.dataset.v; desenhaPalco(); } });
+  $("#painel").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.lado) D.lado = b.dataset.lado;
+    if (b.dataset.det) D.det = D.det === b.dataset.det ? "" : b.dataset.det;
+    salvar(); desenhaPalco(); $("#painel").innerHTML = painelLocal(); rodape();
+  });
+  $("#painel").addEventListener("input", (e) => {
+    if (e.target.id !== "f-outro") return;
+    D.outro = e.target.value;
+    if (D.outro.trim()) { D.z = ""; D.lado = ""; D.det = ""; }
+    salvar(); desenhaPalco(); rodape();
+  });
+  $("#tela").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.ir !== undefined) return irPara(+b.dataset.ir);
+    const g = b.closest("[data-k]");
+    if (g && b.dataset.v) {
+      const k = g.dataset.k;
+      D[k] = k === "cor" && D[k] === b.dataset.v ? "" : b.dataset.v;
+      $$("button", g).forEach((x) => x.setAttribute("aria-pressed", D[k] === x.dataset.v));
+      salvar(); rodape();
     }
   });
-  $("#stp").addEventListener("input", (e) => {
-    const m = { "f-nome": "nome", "f-idade": "idade", "f-ideia": "ideia" }[e.target.id];
-    if (!m) return;
+  $("#tela").addEventListener("input", (e) => {
+    const m = { "f-nome": "nome", "f-idade": "idade", "f-ideia": "ideia" }[e.target.id]; if (!m) return;
     if (m === "idade") e.target.value = e.target.value.replace(/\D/g, "");
     D[m] = e.target.value; salvar();
-    $("#send").href = destino();
+    const a = $("#send"); if (a) a.href = destino();
     if (m !== "ideia" && e.target.getAttribute("aria-invalid") === "true") erro(m, "");
   });
-  $("#stp").addEventListener("click", async (e) => {
+  $("#acao").addEventListener("click", async (e) => {
     const a = e.target.closest("#send");
-    if (!a) return;
-    if (!valida()) return e.preventDefault();
-    if (C.modo === "dm") {
-      try { await navigator.clipboard.writeText(mensagem()); $("#copiado").hidden = false; } catch (_) {}
+    if (a) {
+      if (!valida()) return e.preventDefault();
+      if (C.modo === "dm") { try { await navigator.clipboard.writeText(mensagem()); $("#copiado").hidden = false; } catch (_) {} }
+      return;
     }
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.act === "nx") irPara(passo + 1);
+    if (b.dataset.act === "bk") irPara(passo - 1);
   });
-  const temMouse = () => matchMedia("(hover:hover) and (pointer:fine)").matches;
-  const marcaHover = (id) => { hover = id; $$(".ht").forEach((p) => p.classList.toggle("on", p.dataset.r === id)); legenda(); };
-  $("#stp").addEventListener("mouseover", (e) => {
-    if (!temMouse()) return;
-    const t = e.target.closest("button");
-    if (!t) return;
-    if (t.dataset.r) marcaHover(t.dataset.r);
-    else if (t.dataset.lv !== undefined && D.r) { const p = D.p.slice(); p[+t.dataset.li] = t.dataset.lv; previa = chaves(reg(D.r), p); desenha(); }
-  });
-  $("#stp").addEventListener("mouseout", (e) => {
-    if (!temMouse() || !e.target.closest("button")) return;
-    if (hover) marcaHover("");
-    if (previa) { previa = null; desenha(); }
-  });
-  ovl.addEventListener("click", (e) => { const p = e.target.closest(".ht"); if (p) tocouZona(p); });
-  ovl.addEventListener("mouseover", (e) => { if (!temMouse()) return; const p = e.target.closest(".ht"); if (p) marcaHover(p.dataset.r); });
-  ovl.addEventListener("mouseout", (e) => { if (temMouse() && e.target.closest(".ht")) marcaHover(""); });
-  ovl.addEventListener("keydown", (e) => { const p = e.target.closest(".ht"); if (p && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); tocouZona(p); } });
-  $("#pr").addEventListener("click", (e) => { const b = e.target.closest("button[data-step]"); if (b && !b.disabled) irPara(+b.dataset.step); });
-  $("#zo").addEventListener("click", () => { tudo = 1; preparaPalco(); ajusta(false); });
-  $("#vistas").addEventListener("click", (e) => {
-    const b = e.target.closest("button");
-    if (!b) return;
-    VW = b.dataset.v; tudo = 1; preparaPalco(); desenha(); ajusta(false);
-  });
-  stg.addEventListener("click", (e) => {
-    if (!temMouse() || !Z || !D.r || tudo || e.target.closest(".ht")) return;
-    tudo = 1; preparaPalco(); ajusta(false);
-  });
-  new ResizeObserver(() => { if (Z) { preparaPalco(); ajusta(true); } }).observe(stg);
+  $("#pr").addEventListener("click", (e) => { const b = e.target.closest("button[data-ir]"); if (b && !b.disabled) irPara(+b.dataset.ir); });
+  let largura = estreito();
+  addEventListener("resize", () => { if (estreito() !== largura) { largura = estreito(); if (passo === 0) desenhaPalco(); } });
 
-  passo = D.g ? (D.max >= 1 ? Math.min(D.max, 3) : 1) : 0;
-  if (D.r) { VW = chaves(reg(D.r), D.p).v; }
-  pinta(true);
-  if (COM_PALCO[PASSOS[passo][0]]) ajusta(true);
+  if (D.z) VW = zona(D.z).v;
+  passo = Math.min(D.max || 0, localPronto() ? (projetoPronto() ? 2 : 1) : 0);
+  pinta(false);
 })();

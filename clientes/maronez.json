@@ -4,7 +4,9 @@
   "titulo": "Orçamento | Maronez",
   "site": "https://maronez.com.br",
   "siteRotulo": "maronez.com.br",
-  "dominios": ["manequim.maronez.com.br"],
+  "dominios": [
+    "manequim.maronez.com.br"
+  ],
   "modo": "whatsapp",
   "whatsapp": "555191248594",
   "instagram": "https://www.instagram.com/maronezzzz/",
@@ -27,15 +29,29 @@
   },
   "textos": {
     "titulo": "Bora\ntatuar",
-    "sub": "4 passos rápidos. No final, é só enviar pelo WhatsApp.",
+    "sub": "Toque no corpo, escolha o estilo e mande pro WhatsApp. Leva menos de um minuto.",
     "saudacao": "Olá, Maronez! Vim pelo site e quero fazer um orçamento.",
     "ideia": "Ex.: algo que siga o músculo, sem figura."
   },
   "estilos": [
-    {"nome": "Freehand", "foto": "clientes/maronez/freehand.jpg"},
-    {"nome": "Ignorant", "foto": "clientes/maronez/ignorant.jpg"},
-    {"nome": "Outro", "foto": ""}
+    {
+      "nome": "Freehand",
+      "foto": "clientes/maronez/freehand.jpg"
+    },
+    {
+      "nome": "Ignorant",
+      "foto": "clientes/maronez/ignorant.jpg"
+    },
+    {
+      "nome": "Outro",
+      "foto": ""
+    }
   ],
-  "tamanhos": ["Pequena · até 10 cm", "Média · 10 a 20 cm", "Grande · mais de 20 cm", "Fechar região inteira"],
+  "tamanhos": [
+    "Pequena · até 10 cm",
+    "Média · 10 a 20 cm",
+    "Grande · mais de 20 cm",
+    "Fechar região inteira"
+  ],
   "cores": []
 }

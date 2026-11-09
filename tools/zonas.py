@@ -41,6 +41,7 @@ def maior(m):
 
 
 def caminho(m):
+    m = (cv2.GaussianBlur(m, (0, 0), 1.6) > 127).astype(np.uint8) * 255   # contorno liso
     cs, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     ds = []
     for c in cs:
@@ -160,6 +161,7 @@ def main():
             for nome, pts in base.items():
                 esq = [(x + dx, y) for x, y in pts]
                 dir_ = [(2 * eixo - x, y) for x, y in esq]
+                pares = []
                 for lado, ps in (("A", esq), ("B", dir_)):
                     m = preenche(ps, (h, w))
                     janela = np.zeros((h, w), np.uint8)
@@ -169,6 +171,7 @@ def main():
                         janela[:, meta_x:] = 255
                     m = cv2.bitwise_and(cv2.bitwise_and(m, sil), janela)
                     m = maior(m)
+                    pares.append(m)
                     parts = nome.split(".")
                     chave = parts[0] + "." + lado + ("." + parts[1] if len(parts) > 1 else "")
                     if parts[0] in ("abd", "back"):
@@ -210,6 +213,14 @@ def main():
                     tint = np.zeros(3, np.uint8)
                     tint[:] = np.random.randint(40, 255, 3)
                     cor[m > 0] = cor[m > 0] // 2 + tint // 2
+                if nome.split(".")[0] in ("abd", "back"):
+                    # faixas centrais: uma zona só, sem lado
+                    Z[v][nome + ".C"] = caminho(cv2.bitwise_or(pares[0], pares[1]))
+            # pescoço (frente) e nuca (costas), centrados
+            ny = {"F": {"f": (136, 162), "b": (120, 158)}, "M": {"f": (138, 162), "b": (122, 160)}}[g][v]
+            larg = {"F": (32, 50), "M": (36, 58)}[g]
+            pesc = [(eixo - larg[0], ny[0]), (eixo + larg[0], ny[0]), (eixo + larg[1], ny[1]), (eixo - larg[1], ny[1])]
+            Z[v]["neck.C"] = caminho(maior(cv2.bitwise_and(preenche(pesc, (h, w)), sil)))
         # caixas de enquadramento por vista
         ys, xs = np.where(sil[:, :meta_x] > 0)
         bf = [int(xs.min()) * ESC, int(ys.min()) * ESC, int(xs.max()) * ESC, int(ys.max()) * ESC]
