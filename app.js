@@ -17,7 +17,7 @@
     C = await (await fetch(`${BASE}clientes/${slug}.json`)).json();
   }
   Object.entries(C.tema).forEach(([k, v]) => document.documentElement.style.setProperty("--" + k, v));
-  if (C.fontes && !$("link[data-fontes]")) {
+  if (C.fontes && ![...document.querySelectorAll("link[data-fontes]")].some((x) => x.href === new URL(C.fontes, location.href).href)) {
     const l = document.createElement("link");
     l.rel = "stylesheet"; l.href = C.fontes; l.dataset.fontes = "1";
     document.head.append(l);
@@ -101,8 +101,8 @@
   const regiaoTexto = () => { const r = regiao(); return r.reg + (r.lado ? " · lado " + r.lado.toLowerCase() : ""); };
 
   /* ---------- Palco ---------- */
-  const ZONAS = await (await fetch(url("assets/zonas.json?v=5"))).json();
-  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=5`); });   // troca de corpo sem atraso
+  const ZONAS = await (await fetch(url("assets/zonas.json?v=6"))).json();
+  ["F", "M"].forEach((g) => { const i = new Image(); i.src = url(`assets/${g}.webp?v=6`); });   // troca de corpo sem atraso
   const svg = $("#palco"), img = $("#corpo"), gz = $("#zonas"), gs = $("#sel"), legenda = $("#legenda");
   const estreito = () => matchMedia("(max-width: 760px)").matches;
   const Zg = () => ZONAS[D.g === "Masculino" ? "M" : "F"];
@@ -121,7 +121,7 @@
   }
   function desenhaPalco() {
     const Z = Zg(), g = D.g === "Masculino" ? "M" : "F";
-    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=5`)); }
+    if (img.dataset.g !== g) { img.dataset.g = g; img.setAttribute("href", url(`assets/${g}.webp?v=6`)); }
     if (Z.fundo) document.documentElement.style.setProperty("--estudio", Z.fundo);
     img.setAttribute("width", Z.W); img.setAttribute("height", Z.H);
     const [x, y, w, h] = caixa();
