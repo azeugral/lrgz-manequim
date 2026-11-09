@@ -138,3 +138,9 @@ h3 em { color: var(--lo); }
   .tela > .entra { padding: 14px 10px; }
   .grade button, .grade button + button, .grade button:nth-child(n + 3) { border: 0; }
 }
+
+/* v4: dica, limpar e "ainda não sei o local" */
+.dica { font: 400 14px var(--f-ui); color: var(--paper-dim); }
+.pular { min-height: 46px; padding: 10px 18px; background: var(--paper-2); color: var(--ink); border: 0; box-shadow: var(--relevo); font: 500 15px/1 var(--f-ui); text-transform: none; letter-spacing: .02em; }
+.pular:hover { filter: brightness(1.04); }
+.pular:active { box-shadow: var(--afundado); }

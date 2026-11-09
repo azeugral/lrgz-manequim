@@ -234,6 +234,25 @@ def zonas_vista(g, v, sil):
         u = cv2.morphologyEx(u, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
         MS[pref + ".C"] = u
         Z[pref + ".C"] = caminho(u)
+
+    # v4 (feedback do Samtto): regiões amplas, uma forma só, sem linhas internas
+    def junta(chave, partes):
+        u = MS[partes[0]]
+        for p in partes[1:]:
+            u = cv2.bitwise_or(u, MS[p])
+        u = cv2.morphologyEx(u, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
+        u = cv2.bitwise_and(u, base)
+        MS[chave] = u
+        Z[chave] = caminho(u)
+    if v == "f":
+        junta("abd.C", ["abd.1.C", "abd.2.C", "abd.3.C"])
+        for s in "AB":
+            junta(f"leg.{s}", [f"shin.{s}", f"ankle.{s}"])
+    else:
+        junta("back.top.C", ["back.1.C", "back.2.C"])
+        junta("back.low.C", ["back.3.C"])
+        for s in "AB":
+            junta(f"leg.{s}", [f"knee.{s}", f"shin.{s}", f"ankle.{s}"])
     return Z, MS
 
 
