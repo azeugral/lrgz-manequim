@@ -264,3 +264,10 @@ button.ag-dia:hover { border-color: var(--texto); }
 .dm-ev b { font-weight: 600; } .dm-ev span { color: #3c4043; } .dm-ev small { color: #5f6368; font-size: 12.5px; margin-top: 4px; }
 .dm-nota { color: #5f6368; font-size: 13px; margin: 10px 0 0; }
 @media (max-width: 760px) { .dm-grade { grid-template-columns: 1fr; } .dm-zap, .dm-cal { padding: 12px; } }
+
+/* ---------- telas estreitas (aparelho do lrgz.com.br/agenda, celulares pequenos) ---------- */
+@media (max-width: 480px) {
+  .pr button { font-size: 10px; letter-spacing: .03em; padding-top: 10px; line-height: 1.25; }
+  .pr button span { display: block; margin: 0 0 3px; }
+  .estilos b { font-size: clamp(9px, 3.2vw, 12px); letter-spacing: 0; padding: 10px 6px; line-height: 1.2; overflow-wrap: anywhere; }
+}

@@ -38,19 +38,19 @@
   "estilos": [
     {
       "nome": "Fine line",
-      "foto": ""
+      "foto": "clientes/demo/fine-line.jpg"
     },
     {
       "nome": "Blackwork",
-      "foto": ""
+      "foto": "clientes/demo/blackwork.jpg"
     },
     {
       "nome": "Realismo",
-      "foto": ""
+      "foto": "clientes/demo/realismo.jpg"
     },
     {
       "nome": "Old school",
-      "foto": ""
+      "foto": "clientes/demo/old-school.jpg"
     }
   ],
   "tamanhos": [
