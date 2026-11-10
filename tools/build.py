@@ -26,7 +26,7 @@ MOLDE = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {fontes}
-<link rel="stylesheet" href="{base}app.css?v=11">
+<link rel="stylesheet" href="{base}app.css?v=12">
 {skin}
 <style>body{{background:{cor}}}</style>
 </head>
@@ -47,7 +47,7 @@ MOLDE = """<!doctype html>
 </main>
 <footer class="rod">Orçamento por <a href="https://lrgz.com.br">L R G Z</a></footer>
 <script>{inicio}</script>
-<script src="{base}app.js?v=11"></script>
+<script src="{base}app.js?v=12"></script>
 </body>
 </html>
 """
@@ -65,7 +65,7 @@ def pagina(c, base, inicio, og_url=""):
     icones = f'<link rel="icon" href="{base + (c.get("favicon") or c["logo"])}">'
     if c.get("icone192"):
         icones += f'\n<link rel="apple-touch-icon" href="{base + c["icone192"]}">'
-    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=11" data-skin="1">' if c.get("css") else ""
+    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=12" data-skin="1">' if c.get("css") else ""
     return MOLDE.format(titulo=html.escape(titulo), descricao=html.escape(desc), cor=c["tema"].get("fundo", "#0d0d0d"),
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
@@ -90,7 +90,7 @@ def main():
     hosts, primeiro = {}, None
     for f in sorted(glob.glob("clientes/*.json")):
         c = json.load(open(f, encoding="utf8"))
-        primeiro = primeiro or c
+        primeiro = primeiro or (c if c.get("modo") != "demo" else None)
         for h in c.get("dominios", []):
             hosts[h] = c["slug"]
         os.makedirs(c["slug"], exist_ok=True)

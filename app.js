@@ -7,7 +7,7 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const NS = "http://www.w3.org/2000/svg";
-  const V = "11";
+  const V = "12";
 
   /* ---------- Cliente ---------- */
   const BASE = window.MANEQUIM_BASE || "./";
@@ -287,8 +287,28 @@
   }
 
   /* ---------- Agenda: busca, verificação e pré-reserva ---------- */
-  const agendaViva = () => AG && AG.api && ag.st === "ativa";
+  const agendaViva = () => AG && (AG.api || AG.demo) && ag.st === "ativa";
+  // demonstração (lrgz.com.br/agenda): agenda simulada aqui mesmo, ocupação fixa por data para não mudar a cada visita
+  const DUR = [120, 180, 240, 360];
+  const duracao = () => { const i = (C.tamanhos || []).indexOf(D.tam); return DUR[i] ?? 180; };
+  function agendaDemo() {
+    const dias = {}, hoje = new Date(), [ha] = ABRE.split(":").map(Number), [hf] = FECHA.split(":").map(Number), dur = duracao() / 60;
+    for (let i = 1; i <= 45; i++) {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + i);
+      if (!DIAS_ATEND.includes(d.getDay())) continue;
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const semente = d.getDate() * 7 + d.getMonth() * 13, livres = [];
+      for (let h = ha; h + dur <= hf; h++) if ((semente + h * 5) % 9 > 3) livres.push(`${String(h).padStart(2, "0")}:00`);
+      if (livres.length && (semente % 5) !== 0) dias[k] = livres;
+    }
+    return dias;
+  }
   async function buscarAgenda() {
+    if (AG && AG.demo) { ag.dias = agendaDemo(); ag.st = "ativa"; ag.tam = D.tam;
+      if (D.ag && !(ag.dias[D.ag.data] || []).includes(D.ag.hora)) { D.ag = null; D.reservado = ""; }
+      if (D.agDia && !ag.dias[D.agDia]) D.agDia = "";
+      if (passo === HOR) { const t = $("#tela .entra"); if (t) t.innerHTML = telaHorario(); rodape(); salvar(); }
+      return; }
     if (!AG || !AG.api) { ag.st = "off"; return; }
     if (ag.st && ag.tam === D.tam) return;   // já buscou (ou está buscando) para este tamanho
     const n = ++ag.n; ag.st = "carregando"; ag.tam = D.tam;
@@ -327,6 +347,7 @@
   }
   /* devolve "ok", "ocupado" ou "falhou" */
   async function reservar() {
+    if (AG.demo) { await new Promise((r) => setTimeout(r, 700)); return "ok"; }
     try {
       const turnstile = await esperaToken();
       const corpo = { data: D.ag.data, hora: D.ag.hora, servicos: [D.tam], nome: nomeLimpo(), idade: (D.idade || "").trim(),
@@ -356,10 +377,10 @@
     const L = [`${ola} ${quem} Vim pelo site e quero um orçamento.`.replace(/\s+/g, " ").trim(), linhas.join("\n")];
     if (ideia) L.push(`*IDEIA:*\n_${ideia.replace(/[_*~]/g, "")}_`);
     L.push(AG && D.ag ? T.fechoHorario || "Pode confirmar esse horário? Se precisar, mando referência por aqui." : T.fecho || "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.");
-    L.push(`_Pedido feito em ${location.host || C.siteRotulo}_`);
+    L.push(`_Pedido feito em ${C.modo === "demo" ? "orcamento.seuestudio.com.br" : location.host || C.siteRotulo}_`);
     return L.join("\n\n");
   }
-  const destino = () => (C.modo === "dm" ? C.instagram : `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(mensagem())}`);
+  const destino = () => (C.modo === "demo" ? "#" : C.modo === "dm" ? C.instagram : `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(mensagem())}`);
   function erro(k, msg) { const e = $("#e-" + k), i = $("#f-" + k); e.hidden = !msg; e.textContent = msg || ""; i.setAttribute("aria-invalid", msg ? "true" : "false"); }
   function valida() {
     const n = nomeLimpo(), a = (D.idade || "").trim(), id = parseInt(a, 10);
@@ -372,6 +393,31 @@
     return !p;
   }
 
+  /* ---------- Final da demonstração: o que o profissional recebe ---------- */
+  const zap = (t) => esc(t).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/_([^_]+)_/g, "<i>$1</i>").replace(/\n/g, "<br>");
+  function mostraDemo() {
+    const agora = new Date(), hh = `${agora.getHours()}:${String(agora.getMinutes()).padStart(2, "0")}`;
+    let evento = "";
+    if (D.ag) {
+      const [h, m] = D.ag.hora.split(":").map(Number), fim = h * 60 + m + duracao();
+      const fimTxt = `${Math.floor(fim / 60)}:${String(fim % 60).padStart(2, "0")}`;
+      evento = `<div class="dm-cal"><p class="dm-rot">No Google Agenda do estúdio</p>
+        <div class="dm-ev"><b>PRÉ-AGENDADO · ${esc(nomeLimpo())} · ${esc(D.estilo || "tattoo")}</b>
+        <span>${esc(dBonita(D.ag.data))} · ${D.ag.hora.replace(/^0/, "")} às ${fimTxt}</span>
+        <small>Local: ${esc(regiaoTexto())}<br>Tamanho: ${esc(D.tam)}</small></div>
+        <p class="dm-nota">O horário sai da agenda do site na hora. Você confirma com a pessoa pelo WhatsApp.</p></div>`;
+    }
+    $("#tela").innerHTML = `<div class="entra demo-fim">
+      <h2 class="t">Pedido enviado</h2>
+      <p class="dm-intro">Na versão real, o WhatsApp abre com a mensagem pronta e o horário entra na sua agenda.</p>
+      <div class="dm-grade${evento ? "" : " so"}">
+        <div class="dm-zap"><p class="dm-rot">No WhatsApp do estúdio</p><div class="dm-balao">${zap(mensagem())}<time>${hh}</time></div></div>
+        ${evento}
+      </div></div>`;
+    $("#acao").innerHTML = `<button class="vt" data-refazer>Refazer o teste</button>${C.cta ? `<a class="b" href="${esc(C.cta.url)}" target="_blank" rel="noopener">${esc(C.cta.texto)}</a>` : "<span></span>"}<span class="falta"></span>`;
+    $("#pr").scrollIntoView({ block: "start" });
+  }
+
   /* ---------- Render ---------- */
   const pronto = (p) => (p === 0 ? localPronto() : p === 1 ? projetoPronto() : p === HOR ? horarioPronto() : true);
   function falta(p) {
@@ -382,7 +428,7 @@
   }
   function rodape() {
     const ok = pronto(passo);
-    const nome = passo === ENV ? (C.modo === "dm" ? "Copiar pedido e abrir o Instagram" : "Enviar pelo WhatsApp") : "Continuar";
+    const nome = passo === ENV ? (C.modo === "demo" ? "Enviar pedido" : C.modo === "dm" ? "Copiar pedido e abrir o Instagram" : "Enviar pelo WhatsApp") : "Continuar";
     $("#acao").innerHTML = `${passo > 0 ? `<button class="vt" data-act="bk">Voltar</button>` : `<span></span>`}
       ${passo === ENV ? `<a class="b" id="send" href="${esc(destino())}" target="_blank" rel="noopener">${nome}</a>` : `<button class="b" data-act="nx"${ok ? "" : " disabled"}>${nome}</button>`}
       <span class="falta">${ok ? "" : falta(passo)}</span>`;
@@ -477,6 +523,13 @@
     const a = e.target.closest("#send");
     if (a) {
       if (!valida() || enviando) return e.preventDefault();
+      if (C.modo === "demo") {
+        e.preventDefault(); enviando = true;
+        a.textContent = D.ag ? "Reservando o horário…" : "Enviando…"; a.setAttribute("aria-busy", "true");
+        if (D.ag) { await reservar(); D.reservado = chaveAg(); }
+        else await new Promise((r) => setTimeout(r, 500));
+        enviando = false; salvar(); mostraDemo(); return;
+      }
       if (C.modo === "dm") { try { await navigator.clipboard.writeText(mensagem()); $("#copiado").hidden = false; } catch (_) {} return; }
       // com horário da agenda: pré-reserva antes de abrir o WhatsApp (a janela abre já no clique, para não ser bloqueada)
       if (D.ag && agendaViva() && D.reservado !== chaveAg()) {
@@ -499,6 +552,7 @@
       return;
     }
     const b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-refazer")) { D = vazio(); ag.st = ""; passo = 0; pinta(true); return; }
     if (b.dataset.act === "nx") irPara(passo + 1);
     if (b.dataset.act === "bk") irPara(passo - 1);
   });

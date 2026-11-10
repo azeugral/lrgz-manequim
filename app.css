@@ -247,3 +247,20 @@ button.ag-dia:hover { border-color: var(--texto); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- demonstração (lrgz.com.br/agenda): o que o profissional recebe ---------- */
+.demo-fim { text-align: center; }
+.demo-fim .dm-intro { color: var(--apoio); max-width: 46ch; margin: 6px auto 22px; }
+.dm-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; text-align: left; }
+.dm-grade.so { grid-template-columns: minmax(0, 520px); justify-content: center; }
+.dm-rot { font: 500 12px/1.2 var(--f-rotulo); letter-spacing: .08em; text-transform: uppercase; color: var(--apoio); margin: 0 0 10px; }
+.dm-zap { background: #0b141a; padding: 16px; border: 1px solid var(--linha); }
+.dm-balao { position: relative; background: #005c4b; color: #e9edef; padding: 9px 12px 22px; font: 400 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 92%; margin-left: auto; }
+.dm-balao b { font-weight: 700; } .dm-balao i { font-style: italic; color: #e9edef; }
+.dm-balao time { position: absolute; right: 10px; bottom: 5px; font-size: 11px; color: rgba(233, 237, 239, .65); }
+.dm-cal { background: #fff; color: #1f1f1f; padding: 16px; border: 1px solid var(--linha); }
+.dm-cal .dm-rot { color: #5f6368; }
+.dm-ev { display: grid; gap: 4px; background: #e8f0fe; border-left: 4px solid #1a73e8; padding: 10px 12px; font: 400 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.dm-ev b { font-weight: 600; } .dm-ev span { color: #3c4043; } .dm-ev small { color: #5f6368; font-size: 12.5px; margin-top: 4px; }
+.dm-nota { color: #5f6368; font-size: 13px; margin: 10px 0 0; }
+@media (max-width: 760px) { .dm-grade { grid-template-columns: 1fr; } .dm-zap, .dm-cal { padding: 12px; } }
