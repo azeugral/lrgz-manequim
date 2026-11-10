@@ -1,4 +1,4 @@
-"""Zonas clicáveis do LRGZ Manequim (v3: renders 3D em contrapposto, fundo mantido).
+"""Zonas clicáveis do LRGZ Manequim (v5: um manequim só, sem sexo definido, fundo mantido).
 
 Os corpos não são espelhados, então cada lado de cada vista tem as próprias medidas.
 A = lado esquerdo da imagem, B = lado direito, C = zona central.
@@ -17,33 +17,20 @@ def V(eixo, virilha, topo, pescoco, ombro, braco, perna, **kw):
     return dict(eixo=eixo, virilha=virilha, topo=topo, pescoco=pescoco, ombro=ombro, braco=braco, perna=perna, **kw)
 
 M = {
-    "F": {
-        "f": V(285, (272, 500), 162, (124, 160, 28, 44), {"A": 172, "B": 411},
-               {"A": dict(c1=((167, 292), (218, 288)), c2=((144, 376), (199, 372)), c3=((118, 470), (144, 470)), mao=575),
-                "B": dict(c1=((414, 292), (366, 288)), c2=((428, 376), (384, 372)), c3=((437, 470), (416, 470)), mao=575)},
-               {"A": dict(xo=60, coxa=(168, 430), joelho=(640, 718), tornozelo=(868, 905), pe=985),
-                "B": dict(xo=500, coxa=(366, 430), joelho=(648, 726), tornozelo=(878, 912), pe=985)},
-               peito=315, lat=365, tronco=400, abW=36, vao={"A": 228, "B": 350}),
-        "b": V(741, (752, 500), 162, (124, 160, 28, 42), {"A": 621, "B": 856},
-               {"A": dict(c1=((618, 292), (668, 288)), c2=((601, 376), (648, 372)), c3=((587, 470), (610, 470)), mao=568),
-                "B": dict(c1=((860, 292), (811, 288)), c2=((884, 376), (834, 372)), c3=((904, 470), (880, 470)), mao=568)},
-               {"A": dict(xo=540, joelho=(650, 722), tornozelo=(872, 905), pe=980),
-                "B": dict(xo=960, joelho=(650, 722), tornozelo=(872, 905), pe=980)},
-               costas=(275, 335, 395), gluteo=565, vao={"A": 672, "B": 806}),
-    },
-    "M": {
-        "f": V(309, (305, 515), 150, (116, 150, 36, 52), {"A": 151, "B": 448},
-               {"A": dict(c1=((150, 296), (214, 290)), c2=((131, 400), (181, 400)), c3=((129, 466), (159, 466)), mao=566),
-                "B": dict(c1=((450, 296), (394, 290)), c2=((469, 400), (419, 400)), c3=((470, 466), (443, 466)), mao=566)},
-               {"A": dict(xo=60, coxa=(212, 470), joelho=(640, 722), tornozelo=(868, 905), pe=980),
-                "B": dict(xo=520, coxa=(402, 470), joelho=(640, 722), tornozelo=(868, 905), pe=980)},
-               peito=266, lat=345, tronco=410, abW=50, vao={"A": 228, "B": 382}),
-        "b": V(736, (734, 515), 148, (116, 148, 34, 50), {"A": 577, "B": 886},
-               {"A": dict(c1=((577, 296), (640, 290)), c2=((559, 400), (608, 400)), c3=((560, 466), (588, 466)), mao=566),
-                "B": dict(c1=((887, 296), (826, 290)), c2=((905, 400), (856, 400)), c3=((904, 466), (877, 466)), mao=566)},
-               {"A": dict(xo=540, joelho=(645, 722), tornozelo=(870, 905), pe=980),
-                "B": dict(xo=950, joelho=(645, 722), tornozelo=(870, 905), pe=980)},
-               costas=(270, 335, 405), gluteo=548, vao={"A": 656, "B": 812}),
+    # v5: manequim único, sem sexo definido (render do Figma, src/neutro/n2.png → neutro.py → src/N.png)
+    "N": {
+        "f": V(255, (255, 500), 170, (126, 158, 26, 40), {"A": 150, "B": 360},
+               {"A": dict(c1=((120, 300), (163, 296)), c2=((99, 370), (142, 370)), c3=((80, 470), (100, 470)), mao=565),
+                "B": dict(c1=((391, 300), (348, 296)), c2=((411, 370), (368, 370)), c3=((430, 470), (409, 470)), mao=565)},
+               {"A": dict(xo=60, coxa=(164, 470), joelho=(628, 706), tornozelo=(868, 912), pe=955),
+                "B": dict(xo=450, coxa=(346, 470), joelho=(628, 706), tornozelo=(868, 912), pe=955)},
+               peito=318, lat=372, tronco=440, abW=48, vao={"A": 195, "B": 315}),
+        "b": V(766, (766, 500), 170, (126, 158, 26, 40), {"A": 661, "B": 872},
+               {"A": dict(c1=((632, 300), (673, 296)), c2=((611, 370), (655, 370)), c3=((591, 470), (611, 470)), mao=565),
+                "B": dict(c1=((900, 300), (859, 296)), c2=((922, 370), (877, 370)), c3=((940, 470), (919, 470)), mao=565)},
+               {"A": dict(xo=560, joelho=(628, 706), tornozelo=(868, 912), pe=955),
+                "B": dict(xo=980, joelho=(628, 706), tornozelo=(868, 912), pe=955)},
+               costas=(290, 350, 420), gluteo=525, vao={"A": 706, "B": 826}),
     },
 }
 
@@ -258,7 +245,7 @@ def zonas_vista(g, v, sil):
 
 def main():
     saida = {}
-    for g in "FM":
+    for g in M:
         img = cv2.imread(f"src/{g}.png")
         h, w = img.shape[:2]
         sil = silhueta(g)

@@ -1,4 +1,4 @@
-/* LRGZ Manequim v2. Cores e fontes vêm do JSON do cliente. Tudo centrado e simétrico. */
+/* LRGZ Manequim v5. Cores e fontes vêm do JSON do cliente. Tudo centrado e simétrico. */
 :root {
   --fundo: #0d0d0d; --texto: #f2f1ec; --apoio: #8f8d88; --linha: rgba(255, 255, 255, .14);
   --destaque: #fff; --sobre-destaque: #0d0d0d; --palco: #161616;
@@ -41,7 +41,7 @@ h1 { margin: 0; font: 800 clamp(36px, 6vw, 76px)/1.02 var(--f-titulo); color: va
 .lead { margin: 16px auto clamp(26px, 4vw, 40px); max-width: 46ch; color: var(--apoio); }
 
 /* ---------- passos ---------- */
-.pr { list-style: none; margin: 0 auto; padding: 0; max-width: 640px; display: grid; grid-template-columns: repeat(3, 1fr); }
+.pr { list-style: none; margin: 0 auto; padding: 0; max-width: 680px; display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); }
 .pr li { position: relative; border-top: 1px solid var(--linha); }
 .pr li::before { content: ""; position: absolute; left: 0; top: -1px; height: 2px; width: 0; background: var(--destaque); transition: width .5s var(--ease); }
 .pr li.d::before, .pr li.on::before { width: 100%; }
@@ -60,6 +60,7 @@ h1 { margin: 0; font: 800 clamp(36px, 6vw, 76px)/1.02 var(--f-titulo); color: va
 .seg button:hover { color: var(--texto); }
 .seg button[aria-pressed="true"] { background: var(--destaque); color: var(--sobre-destaque); }
 #grupo-v { display: none; }
+@media (min-width: 761px) { .controles { display: none; } }
 
 .palco-wrap { position: relative; background: var(--estudio, var(--palco)); border: 1px solid var(--linha); }
 .palco-wrap::before, .palco-wrap::after { content: ""; position: absolute; top: 50%; width: 1px; height: 0; }
@@ -137,6 +138,35 @@ input:focus, textarea:focus { border-color: var(--texto); outline: none; }
 .nota { margin: 6px 0 0; text-align: center; color: var(--apoio); font-size: 14px; }
 .copiado { text-align: center; color: var(--apoio); font-size: 14px; }
 
+/* ---------- horário: agenda do Google ou preferência de dias ---------- */
+.ag { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); border: 1px solid var(--linha); }
+.ag-cal { padding: 16px; }
+.ag-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.ag-topo strong { font: 700 15px/1 var(--f-titulo); text-transform: capitalize; }
+.ag-seta { width: 44px; height: 44px; background: none; border: 1px solid var(--linha); font-size: 20px; line-height: 1; transition: border-color .3s var(--ease); }
+.ag-seta:hover:not(:disabled) { border-color: var(--texto); }
+.ag-seta:disabled { opacity: .3; cursor: default; }
+.ag-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.ag-sem { padding: 4px 0; text-align: center; font: 400 11px var(--f-rotulo); color: var(--apoio); text-transform: uppercase; letter-spacing: .06em; }
+.ag-dia { display: grid; place-items: center; height: 42px; min-width: 0; padding: 0; background: none; border: 1px solid var(--linha); font-size: 15px; transition: background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease); }
+.ag-dia.off { border-color: transparent; color: var(--apoio); opacity: .4; }
+button.ag-dia:hover { border-color: var(--texto); }
+.ag-dia[aria-pressed="true"], .ag-hora[aria-pressed="true"] { background: var(--destaque); border-color: var(--destaque); color: var(--sobre-destaque); }
+.ag-horas { padding: 16px; border-left: 1px solid var(--linha); min-width: 0; }
+.ag-rot { margin: 0 0 10px; color: var(--apoio); font-size: 14px; text-transform: capitalize; }
+.ag-lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.ag-hora { min-height: 44px; background: none; border: 1px solid var(--linha); font: 500 14px var(--f-rotulo); transition: background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease); }
+.ag-hora:hover { border-color: var(--texto); }
+.ag-msg { margin: 0; padding: 18px 0; text-align: center; color: var(--apoio); font-size: 14px; }
+.ag-horas .ag-msg { padding: 0; text-align: left; }
+.ag-aviso { margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--erro, #e5484d); color: var(--texto); text-align: center; font-size: 14px; }
+.grade.ag-chips { grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); }
+.grade.ag-chips button { min-height: 60px; }
+.ag-pe { display: flex; justify-content: center; margin-top: 18px; }
+.ag-combinar[aria-pressed="true"] { background: var(--destaque); border-color: var(--destaque); color: var(--sobre-destaque); }
+.ag-verif:empty { display: none; }
+.ag-verif { display: flex; justify-content: center; margin: 10px 0 0; }
+
 /* ---------- barra de ação: simétrica ---------- */
 .acao { position: sticky; bottom: 0; z-index: 5; max-width: 760px; margin-left: auto; margin-right: auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; margin-top: 26px; margin-bottom: 0; padding: 16px 0 calc(16px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--fundo) 26%); }
 .acao .vt { justify-self: start; }
@@ -178,6 +208,16 @@ input:focus, textarea:focus { border-color: var(--texto); outline: none; }
   .grade button:nth-child(odd) { border-left: 0; }
   .grade button:nth-child(n + 3) { border-top: 1px solid var(--linha); }
   .grade button + button:nth-child(even) { border-left: 1px solid var(--linha); }
+  .ag { grid-template-columns: 1fr; }
+  .ag-cal { padding: 12px 10px; }
+  .ag-horas { border-left: 0; border-top: 1px solid var(--linha); padding: 14px 10px; }
+  .ag-dia { height: 40px; }
+  .grade.ag-chips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grade.ag-chips button, .grade.ag-chips button + button { border: 0; border-right: 1px solid var(--linha); border-bottom: 1px solid var(--linha); }
+  .grade.ag-chips button:nth-child(3n) { border-right: 0; }
+  .grade.ag-chips button:nth-last-child(-n + 3):nth-child(3n + 1), .grade.ag-chips button:nth-last-child(-n + 3):nth-child(3n + 1) ~ button { border-bottom: 0; }
+  .pr button { font-size: 11px; letter-spacing: .04em; }
+  .pr button span { margin-right: 4px; }
   .resumo { grid-template-columns: 1fr; }
   .mini-wrap { border-right: 0; border-bottom: 1px solid var(--linha); min-height: 0; height: 170px; }
   .mini { aspect-ratio: auto; }
