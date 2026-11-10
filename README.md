@@ -5,7 +5,8 @@ Orçamento de tatuagem tocando no corpo. Um código só; cada cliente é um JSON
 - Novo cliente: criar `clientes/<slug>.json` + `clientes/<slug>/`, rodar `python tools/build.py`, push.
 - Link: `/<slug>/`. Subdomínio: pôr o host em `dominios` no JSON e adicionar como Custom domain no projeto Cloudflare Pages.
 - `modo`: `whatsapp` ou `dm` (copia o pedido e abre o Instagram).
-- Corpo: um manequim único, sem sexo definido (`assets/N.webp`). Máscara e limpeza da fonte em `tools/neutro.py`; zonas em `tools/zonas.py` (fontes em `tools/src`).
+- Corpo: um manequim único, sem sexo definido (`assets/N.webp`). Máscara e limpeza da fonte em `tools/neutro.py`, recorte fino com alfa e sombra nos pés em `tools/recorte.py`, zonas e exportação em `tools/zonas.py` (fontes em `tools/src`). Ordem: neutro → recorte → zonas → build.
+- Palco estilizado no CSS (`#palco`, `#cena`): luz de estúdio, chão, anel de plataforma, grão e vinheta. Cor da luz em `--luz` e `--anel` (padrão = cor do título do cliente); a pele do cliente pode trocar o fundo inteiro (ver `clientes/samtto/skin.css`).
 
 ## Subdomínio do cliente
 

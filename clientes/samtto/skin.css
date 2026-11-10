@@ -71,7 +71,16 @@ h1::before { content: ""; flex: none; width: 1.05em; height: 1.05em; background:
 .palco-wrap::before, .tela::before { content: "tocar_no_corpo.exe"; position: static; display: flex; align-items: center; gap: 8px; width: auto; height: auto; min-height: 30px; padding: 3px 44px 3px 30px;
   background: var(--boneco) 8px 50% / 16px 16px no-repeat, var(--x) calc(100% - 15px) 50% / 10px 10px no-repeat, linear-gradient(90deg, var(--blood-deep), var(--blood));
   color: var(--paper); font: 500 15px/1 var(--f-ui); image-rendering: pixelated; }
-.palco-wrap #palco { background: var(--estudio, var(--palco)); box-shadow: var(--campo); }
+.palco-wrap #palco { box-shadow: var(--campo); }
+/* palco do Samtto: tela de PC antigo, luz vermelha e grade de pixel */
+.palco-wrap { --luz: rgba(255, 40, 26, .55); --anel: rgba(255, 60, 40, .55); }
+.palco-wrap #palco { background:
+  radial-gradient(ellipse 120% 95% at 50% 42%, transparent 50%, rgba(0, 0, 0, .6) 100%),
+  repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 4px),
+  linear-gradient(90deg, rgba(200, 0, 0, .07) 1px, transparent 1px) 0 0 / 24px 24px,
+  linear-gradient(0deg, rgba(200, 0, 0, .07) 1px, transparent 1px) 0 0 / 24px 24px,
+  linear-gradient(180deg, #2a1414 0%, #140c0c 50%, #090606 100%); }
+#cena .a2 { stroke-dasharray: 4 4; }
 .tela::before { content: "agendar_tattoo.exe"; margin: 0 0 4px; background: var(--cal) 8px 50% / 16px 16px no-repeat, var(--x) calc(100% - 15px) 50% / 10px 10px no-repeat, linear-gradient(90deg, var(--blood-deep), var(--blood)); }
 .tela { margin-top: clamp(22px, 3vw, 34px); padding-top: 3px; --texto: var(--ink); --apoio: var(--lo); --linha: rgba(10, 8, 8, .22); }
 .tela > .entra { padding: clamp(14px, 4vw, 24px); }

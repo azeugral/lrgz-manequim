@@ -7,7 +7,7 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const NS = "http://www.w3.org/2000/svg";
-  const V = "10";
+  const V = "11";
 
   /* ---------- Cliente ---------- */
   const BASE = window.MANEQUIM_BASE || "./";
@@ -182,6 +182,14 @@
     r0.setAttribute("x", so && VW === "b" ? meio : 0); r0.setAttribute("y", 0);
     r0.setAttribute("width", so ? (VW === "f" ? meio : Z.W - meio) : Z.W); r0.setAttribute("height", Z.H);
     svg.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
+    // palco: luz de estúdio atrás de cada vista, brilho no chão e anel de plataforma sob os pés
+    $("#cena").innerHTML = ["f", "b"].filter((v) => !so || v === VW).map((v) => {
+      const b = Z.box[v], cx = (b[0] + b[2]) / 2, bw = b[2] - b[0], bh = b[3] - b[1], pe = b[3];
+      return `<ellipse class="luz" cx="${cx}" cy="${b[1] + bh * 0.4}" rx="${bw * 0.8}" ry="${bh * 0.62}"/>`
+        + `<ellipse class="chao" cx="${cx}" cy="${pe - 6}" rx="${bw * 0.66}" ry="${bw * 0.11}"/>`
+        + `<ellipse class="anel" cx="${cx}" cy="${pe - 6}" rx="${bw * 0.4}" ry="${bw * 0.055}"/>`
+        + `<ellipse class="anel a2" cx="${cx}" cy="${pe - 6}" rx="${bw * 0.56}" ry="${bw * 0.078}"/>`;
+    }).join("");
     let html = "";
     Zs.forEach((z) => {
       if (so && z.v !== VW) return;

@@ -6,6 +6,7 @@ Medidas em pixels da imagem original (1024); a saída é em 2048.
 Rodar de tools/: python zonas.py
 """
 import json
+import os
 import cv2
 import numpy as np
 
@@ -282,11 +283,18 @@ def main():
         a = np.clip(dist / 120, 0, 1)[..., None]
         a = a * a * (3 - 2 * a)
         final = grande * a + cor[None, None, :] * (1 - a)
+        recorte = f"src/{g}_rgba.png"
+        if os.path.exists(recorte):
+            # v6: manequim recortado (recorte.py), sem fundo; o palco estilizado vem do CSS
+            rgba = cv2.imread(recorte, cv2.IMREAD_UNCHANGED)
+            cv2.imwrite(f"../assets/{g}.webp", rgba, [cv2.IMWRITE_WEBP_QUALITY, 92])
+            saida[g] = {"W": W, "H": H, "recorte": True, "box": {"f": caixa(0, 512), "b": caixa(512, w)}, "z": Z}
+            continue
         cv2.imwrite(f"../assets/{g}.webp", np.clip(final, 0, 255).astype(np.uint8), [cv2.IMWRITE_WEBP_QUALITY, 90])
         saida[g] = {"W": W, "H": H, "fundo": "#%02x%02x%02x" % (int(cor[2]), int(cor[1]), int(cor[0])),
                     "box": {"f": caixa(0, 512), "b": caixa(512, w)}, "z": Z}
     json.dump(saida, open("../assets/zonas.json", "w"), separators=(",", ":"))
-    print({g: {v: len(saida[g]["z"][v]) for v in "fb"} for g in saida}, {g: (saida[g]["fundo"], saida[g]["box"]) for g in saida})
+    print({g: {v: len(saida[g]["z"][v]) for v in "fb"} for g in saida}, {g: (saida[g].get("fundo", "recorte"), saida[g]["box"]) for g in saida})
 
 
 if __name__ == "__main__":
