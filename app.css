@@ -272,6 +272,7 @@ button.ag-dia:hover { border-color: var(--texto); }
   .pr button span { display: block; margin: 0 0 3px; }
   .b { font-size: 11px; letter-spacing: .02em; padding: 15px 10px; }
   .acao { gap: 10px; }
+  .campos { grid-template-columns: minmax(0, 1fr); }
   .resumo dl div { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 8px; padding: 10px 12px; }
   .estilos b { font-size: clamp(9px, 3.2vw, 12px); letter-spacing: 0; padding: 10px 6px; line-height: 1.2; overflow-wrap: anywhere; }
 }
