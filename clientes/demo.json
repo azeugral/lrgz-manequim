@@ -36,10 +36,22 @@
     "ideia": "Ex.: uma rosa em fine line, sem sombra."
   },
   "estilos": [
-    { "nome": "Fine line", "foto": "" },
-    { "nome": "Blackwork", "foto": "" },
-    { "nome": "Realismo", "foto": "" },
-    { "nome": "Old school", "foto": "" }
+    {
+      "nome": "Fine line",
+      "foto": ""
+    },
+    {
+      "nome": "Blackwork",
+      "foto": ""
+    },
+    {
+      "nome": "Realismo",
+      "foto": ""
+    },
+    {
+      "nome": "Old school",
+      "foto": ""
+    }
   ],
   "tamanhos": [
     "Pequena · até 10 cm",
@@ -48,6 +60,21 @@
     "Fechar região inteira"
   ],
   "cores": [],
-  "agenda": { "demo": true, "horario": "08:00-18:00", "dias": [1, 2, 3, 4, 5, 6] },
-  "cta": { "texto": "Quero no meu estúdio", "url": "https://wa.me/5519984428872?text=Oi%2C%20testei%20o%20L%20R%20G%20Z%20Agenda%20no%20site%20e%20quero%20no%20meu%20est%C3%BAdio." }
+  "agenda": {
+    "demo": true,
+    "horario": "08:00-18:00",
+    "dias": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "cta": {
+    "texto": "Quero no meu estúdio",
+    "url": "https://wa.me/5519984428872?text=Oi%2C%20testei%20o%20L%20R%20G%20Z%20Agenda%20no%20site%20e%20quero%20no%20meu%20est%C3%BAdio."
+  },
+  "css": "clientes/demo/skin.css"
 }
