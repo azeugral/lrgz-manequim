@@ -1,3 +1,13 @@
 /* demo do lrgz.com.br/agenda: roda dentro do aparelho, sem barra de rolagem aparente */
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { display: none; }
+
+/* estilos como folhas de "disponíveis": papel branco, número no canto, nome na faixa de baixo */
+.estilos { counter-reset: est; }
+.estilos button { counter-increment: est; aspect-ratio: auto; display: flex; flex-direction: column; background: #fff; border: 1px solid #d9d6cf; }
+.estilos button::before { content: counter(est, decimal-leading-zero); position: absolute; top: 0; left: 0; z-index: 1; background: #0b0b0c; color: #fff; font: 600 11px/1 var(--f-rotulo); letter-spacing: .06em; padding: 6px 8px; }
+.estilos img { height: auto; aspect-ratio: 4 / 5; }
+.estilos b { position: static; background: #f6f4ef; color: #151515; border-top: 1px solid #e3e0d8; text-align: left; text-transform: none; font: 600 13px/1.2 var(--f-texto); letter-spacing: 0; padding: 11px 12px; }
+.estilos button[aria-pressed="true"] { border-color: #f3f4f5; box-shadow: 0 0 0 2px #f3f4f5; }
+.estilos button[aria-pressed="true"] b { background: #0b0b0c; color: #fff; }
+@media (max-width: 480px) { .estilos b { font-size: 12px; padding: 9px 10px; } }

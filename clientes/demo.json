@@ -38,19 +38,19 @@
   "estilos": [
     {
       "nome": "Fine line",
-      "foto": "clientes/demo/papel-fine-line.jpg"
+      "foto": "clientes/demo/flash-fine-line.jpg"
     },
     {
       "nome": "Blackwork",
-      "foto": "clientes/demo/papel-blackwork.jpg"
+      "foto": "clientes/demo/flash-blackwork.jpg"
     },
     {
       "nome": "Realismo",
-      "foto": "clientes/demo/papel-realismo.jpg"
+      "foto": "clientes/demo/flash-realismo.jpg"
     },
     {
       "nome": "Old school",
-      "foto": "clientes/demo/papel-old-school.jpg"
+      "foto": "clientes/demo/flash-old-school.jpg"
     }
   ],
   "tamanhos": [

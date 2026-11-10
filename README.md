@@ -29,8 +29,4 @@ Opcional. Com o bloco `agenda` no JSON, o pedido ganha o passo "Horário" (4 pas
 
 ## Fotos da demo
 
-Os estilos da demo mostram desenhos em papel (como "tatuagens disponíveis"), nunca corpos reais:
-- `papel-fine-line.jpg`, `papel-blackwork.jpg`, `papel-realismo.jpg`: Unsplash (licença Unsplash, uso livre), IDs 1766083274361-ed1f8c94c191, 1789823285320-b545e9ecedf2, 1593472807861-5bb884af28f6.
-- `papel-old-school.jpg`: recorte de "Tattoo Flash SAAM-1998.84.50C" (Smithsonian American Art Museum, CC0, Wikimedia Commons).
-
-Cortadas em 480x600. Cliente real usa fotos do próprio portfólio.
+Os estilos da demo mostram folhas de "disponíveis": desenhos em papel branco com a marca EXEMPLO no canto, nunca corpos reais. `clientes/demo/flash-{fine-line,blackwork,realismo,old-school}.jpg` (600x750) foram gerados por IA (Figma, gpt-image) e montados com a marca em Michroma. O cartão (número no canto, nome na faixa de baixo) está em `clientes/demo/skin.css`. Cliente real usa fotos do próprio portfólio.
