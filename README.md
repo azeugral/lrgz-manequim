@@ -29,4 +29,8 @@ Opcional. Com o bloco `agenda` no JSON, o pedido ganha o passo "Horário" (4 pas
 
 ## Fotos da demo
 
-`clientes/demo/{fine-line,blackwork,realismo,old-school}.jpg` vêm do Unsplash (licença Unsplash, uso livre sem atribuição obrigatória), cortadas em 480x600 por `scratchpad/fotos_demo.py` da sessão. IDs: 1783916813254-69bb2debb1b7, 1561377455-190afb395ed7, 1522687533888-1078974f88ec, 1601848714157-d845bb5c11ff. São só exemplos genéricos da demonstração; cliente real usa fotos do próprio portfólio.
+Os estilos da demo mostram desenhos em papel (como "tatuagens disponíveis"), nunca corpos reais:
+- `papel-fine-line.jpg`, `papel-blackwork.jpg`, `papel-realismo.jpg`: Unsplash (licença Unsplash, uso livre), IDs 1766083274361-ed1f8c94c191, 1789823285320-b545e9ecedf2, 1593472807861-5bb884af28f6.
+- `papel-old-school.jpg`: recorte de "Tattoo Flash SAAM-1998.84.50C" (Smithsonian American Art Museum, CC0, Wikimedia Commons).
+
+Cortadas em 480x600. Cliente real usa fotos do próprio portfólio.
