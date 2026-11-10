@@ -26,3 +26,7 @@ Opcional. Com o bloco `agenda` no JSON, o pedido ganha o passo "Horário" (4 pas
 - Agenda vinculada: calendário com os horários livres; ao enviar, o horário é pré-reservado no Google Agenda do tatuador e a mensagem sai com "(pré-reservado no site)".
 - Agenda ainda não vinculada ou fora do ar (API 503): a pessoa marca os melhores dias e o período, ou "Prefiro combinar a data no chat". `horario` e `dias` (0 = domingo) só servem para esse modo; padrão 08:00-18:00, segunda a sábado.
 - Ligar a agenda real: ver "Tatuador com o LRGZ Manequim" no README do `lrgz-agenda`. O Manequim não precisa de novo deploy.
+
+## Fotos da demo
+
+`clientes/demo/{fine-line,blackwork,realismo,old-school}.jpg` vêm do Unsplash (licença Unsplash, uso livre sem atribuição obrigatória), cortadas em 480x600 por `scratchpad/fotos_demo.py` da sessão. IDs: 1783916813254-69bb2debb1b7, 1561377455-190afb395ed7, 1522687533888-1078974f88ec, 1601848714157-d845bb5c11ff. São só exemplos genéricos da demonstração; cliente real usa fotos do próprio portfólio.
