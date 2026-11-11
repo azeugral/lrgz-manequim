@@ -27,6 +27,10 @@
   // ?embed=1: só o manequim, dentro do formulário do site do cliente (iframe). Avisa o site a cada toque.
   const EMBED = new URLSearchParams(location.search).has("embed");
   if (EMBED) document.documentElement.classList.add("embed");
+  // ?vitrine=1: a página inteira dentro de outro site (lrgz.com.br/agenda). Sem rolagem própria: avisa a altura
+  // e pede ao site de fora para rolar até a próxima seção.
+  const VITRINE = !EMBED && parent !== window && new URLSearchParams(location.search).has("vitrine");
+  if (VITRINE) document.documentElement.classList.add("vitrine");
   document.documentElement.dataset.cliente = C.slug;
   if (C.css && !$("link[data-skin]")) { const k = document.createElement("link"); k.rel = "stylesheet"; k.href = url(C.css) + "?v=" + V; k.dataset.skin = "1"; document.head.append(k); }
   const ico = $("link[rel=icon]"); if (ico) ico.href = url(C.favicon || C.logo);
@@ -415,7 +419,30 @@
         ${evento}
       </div></div>`;
     $("#acao").innerHTML = `<button class="vt" data-refazer>Refazer o teste</button>${C.cta ? `<a class="b" href="${esc(C.cta.url)}" target="_blank" rel="noopener">${esc(C.cta.texto)}</a>` : "<span></span>"}<span class="falta"></span>`;
-    $("#pr").scrollIntoView({ block: "start" });
+    rola($("#pr"), $("#pr"));
+  }
+
+  /* ---------- Rolagem guiada: depois de cada escolha, a próxima seção aparece sozinha ---------- */
+  const suave = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+  // modo "ver": mostra o bloco inteiro (rola só se ele não estiver todo à vista) · "fim": garante o fim do bloco à vista
+  function rola(topoEl, fimEl, modo = "ver") {
+    if (!topoEl) return;
+    fimEl = fimEl || topoEl;
+    const t = topoEl.getBoundingClientRect().top + scrollY, b = fimEl.getBoundingClientRect().bottom + scrollY;
+    if (VITRINE) { parent.postMessage({ manequim: 1, rolar: { t, b, modo } }, "*"); return; }
+    const barra = $("#acao") ? $("#acao").offsetHeight : 0, topo = scrollY + 16, base = scrollY + innerHeight - barra - 12;
+    let y = null;
+    if (modo === "fim") { if (b > base) y = b - innerHeight + barra + 12; }
+    else if (t < topo || b > base) y = t - 16;
+    if (y !== null) scrollTo({ top: Math.max(0, y), behavior: suave() });
+  }
+  const rolaAcao = () => (VITRINE ? rola($("#acao"), null, "fim") : rola(passo === 0 ? $("#painel") : $("#tela"), null, "fim"));
+  const avisaAltura = () => VITRINE && parent.postMessage({ manequim: 1, altura: Math.ceil(document.body.getBoundingClientRect().height) }, "*");
+  // projeto: estilo, depois tamanho; com os dois escolhidos, o botão de continuar
+  function proximaDoProjeto() {
+    const bloco = (k) => { const g = $(`#tela [data-k="${k}"]`); return g ? [g.previousElementSibling, g] : null; };
+    const alvo = !D.estilo ? bloco("estilo") : !D.tam ? bloco("tam") : null;
+    setTimeout(() => (alvo ? rola(alvo[0], alvo[1]) : rolaAcao()), 120);
   }
 
   /* ---------- Render ---------- */
@@ -448,7 +475,7 @@
     if (passo === ENV && D.ag && agendaViva()) carregarTurnstile();
     rodape();
     salvar();
-    if (rolar) $("#pr").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    if (rolar) rola($("#pr"), $("#pr"));
   }
   function enquadraMini() {
     const m = $("#mini"); if (!m) return;
@@ -461,9 +488,11 @@
   // toque soma a região; tocar de novo tira
   function escolhe(id, s) {
     const k = `${id}:${s}`;
+    const antes = D.sel.length;
     D.sel = D.sel.includes(k) ? D.sel.filter((x) => x !== k) : [...D.sel, k];
     D.semLocal = false;
     salvar(); desenhaPalco(); $("#painel").innerHTML = painelLocal(); rodape();
+    if (!antes && D.sel.length) setTimeout(rolaAcao, 160);
   }
   function cliqueHorario(b) {
     const t = $("#tela .entra");
@@ -477,8 +506,9 @@
       if (D.combinar) { D.ag = null; D.agDia = ""; D.pdias = []; D.per = ""; D.reservado = ""; }
     } else return false;
     t.innerHTML = telaHorario();
-    if (b.dataset.dia && estreito()) { const h = $(".ag-horas", t); if (h) h.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
     salvar(); rodape();
+    if (b.dataset.dia) { const h = $(".ag-horas", t); if (h) setTimeout(() => rola(h, h), 120); }
+    else if (b.dataset.hora || (b.dataset.per && D.per) || (b.dataset.combinar !== undefined && D.combinar)) setTimeout(rolaAcao, 120);
     return true;
   }
 
@@ -509,6 +539,7 @@
       D[k] = k === "cor" && D[k] === b.dataset.v ? "" : b.dataset.v;
       $$("button", g).forEach((x) => x.setAttribute("aria-pressed", D[k] === x.dataset.v));
       salvar(); rodape();
+      if (D[k]) proximaDoProjeto();
     }
   });
   $("#tela").addEventListener("input", (e) => {
@@ -566,4 +597,5 @@
   passo = EMBED ? 0 : Math.min(D.max || 0, primeiro < 0 ? ENV : primeiro);
   pinta(false);
   if (EMBED) { new ResizeObserver(avisa).observe(document.body); avisa(); }
+  if (VITRINE) { new ResizeObserver(avisaAltura).observe(document.body); avisaAltura(); }
 })();

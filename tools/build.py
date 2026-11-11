@@ -26,7 +26,7 @@ MOLDE = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {fontes}
-<link rel="stylesheet" href="{base}app.css?v=16">
+<link rel="stylesheet" href="{base}app.css?v=18">
 {skin}
 <style>body{{background:{cor}}}</style>
 </head>
@@ -47,7 +47,7 @@ MOLDE = """<!doctype html>
 </main>
 <footer class="rod">Orçamento por <a href="https://lrgz.com.br">L R G Z</a></footer>
 <script>{inicio}</script>
-<script src="{base}app.js?v=16"></script>
+<script src="{base}app.js?v=18"></script>
 </body>
 </html>
 """
@@ -65,7 +65,7 @@ def pagina(c, base, inicio, og_url=""):
     icones = f'<link rel="icon" href="{base + (c.get("favicon") or c["logo"])}">'
     if c.get("icone192"):
         icones += f'\n<link rel="apple-touch-icon" href="{base + c["icone192"]}">'
-    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=16" data-skin="1">' if c.get("css") else ""
+    skin = f'<link rel="stylesheet" href="{base + c["css"]}?v=18" data-skin="1">' if c.get("css") else ""
     return MOLDE.format(titulo=html.escape(titulo), descricao=html.escape(desc), cor=c["tema"].get("fundo", "#0d0d0d"),
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
