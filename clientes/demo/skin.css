@@ -2,12 +2,12 @@
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { display: none; }
 
-/* estilos como folhas de "disponíveis": papel branco, número no canto, nome na faixa de baixo */
-.estilos { counter-reset: est; }
-.estilos button { counter-increment: est; aspect-ratio: auto; display: flex; flex-direction: column; background: #fff; border: 1px solid #d9d6cf; }
-.estilos button::before { content: counter(est, decimal-leading-zero); position: absolute; top: 0; left: 0; z-index: 1; background: #0b0b0c; color: #fff; font: 600 11px/1 var(--f-rotulo); letter-spacing: .06em; padding: 6px 8px; }
-.estilos img { height: auto; aspect-ratio: 4 / 5; }
-.estilos b { position: static; background: #f6f4ef; color: #151515; border-top: 1px solid #e3e0d8; text-align: left; text-transform: none; font: 600 13px/1.2 var(--f-texto); letter-spacing: 0; padding: 11px 12px; }
-.estilos button[aria-pressed="true"] { border-color: #f3f4f5; box-shadow: 0 0 0 2px #f3f4f5; }
-.estilos button[aria-pressed="true"] b { background: #0b0b0c; color: #fff; }
-@media (max-width: 480px) { .estilos b { font-size: 12px; padding: 9px 10px; } }
+/* estilos só com o nome, centrado no quadro (sem imagens de exemplo); 3 colunas também no celular */
+.estilos, .estilos.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.estilos.g3 > :last-child:nth-child(odd) { grid-column: auto; height: auto; aspect-ratio: 4 / 5; }
+.estilos button { display: grid; place-items: center; background: var(--palco); border: 1px solid var(--linha); }
+.estilos .sem { display: none; }
+.estilos b { position: static; background: none; color: var(--texto); text-align: center; text-transform: uppercase; font: 600 14px/1.2 var(--f-texto); letter-spacing: .12em; padding: 0 6px; }
+.estilos button[aria-pressed="true"] { background: var(--destaque); border-color: var(--destaque); box-shadow: none; }
+.estilos button[aria-pressed="true"] b { background: none; color: var(--sobre-destaque); }
+@media (max-width: 480px) { .estilos b { font-size: 12px; letter-spacing: .08em; padding: 0 4px; overflow-wrap: normal; } }

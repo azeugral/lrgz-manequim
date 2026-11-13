@@ -37,20 +37,13 @@
   },
   "estilos": [
     {
-      "nome": "Fine line",
-      "foto": "clientes/demo/flash-fine-line.jpg"
+      "nome": "FINELINE"
     },
     {
-      "nome": "Blackwork",
-      "foto": "clientes/demo/flash-blackwork.jpg"
+      "nome": "BLACKWORK"
     },
     {
-      "nome": "Realismo",
-      "foto": "clientes/demo/flash-realismo.jpg"
-    },
-    {
-      "nome": "Old school",
-      "foto": "clientes/demo/flash-old-school.jpg"
+      "nome": "COBERTURA"
     }
   ],
   "tamanhos": [
