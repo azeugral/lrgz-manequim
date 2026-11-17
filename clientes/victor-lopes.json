@@ -8,10 +8,6 @@
   "modo": "whatsapp",
   "whatsapp": "5511994129160",
   "instagram": "https://www.instagram.com/victorlopes.tattoo/",
-  "agenda": {
-    "horario": "10:00-19:00",
-    "dias": [1, 2, 3, 4, 5, 6]
-  },
   "logo": "clientes/victor-lopes/logo.webp",
   "favicon": "clientes/victor-lopes/favicon-32.png",
   "icone192": "clientes/victor-lopes/icon-192.png",
@@ -37,16 +33,28 @@
   },
   "textos": {
     "titulo": "Monte seu projeto",
-    "sub": "Toque no corpo, escolha o estilo e o melhor dia. O pedido chega pronto no WhatsApp do Victor.",
+    "sub": "Toque no corpo, escolha o estilo e o tamanho. O pedido chega pronto no WhatsApp do Victor.",
     "ola": "Olá, Victor!",
-    "fecho": "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.",
+    "fecho": "Pode me passar o valor e as datas livres? Se precisar, mando referências por aqui.",
     "ideia": "Ex.: lírios com um vaso, seguindo o antebraço."
   },
   "estilos": [
-    { "nome": "Blackwork", "foto": "clientes/victor-lopes/blackwork.jpg" },
-    { "nome": "Fine line", "foto": "clientes/victor-lopes/fineline.jpg" },
-    { "nome": "Escrita", "foto": "clientes/victor-lopes/escrita.jpg" },
-    { "nome": "Arte disponível", "foto": "clientes/victor-lopes/disponivel.jpg" }
+    {
+      "nome": "Blackwork",
+      "foto": "clientes/victor-lopes/blackwork.jpg"
+    },
+    {
+      "nome": "Fine line",
+      "foto": "clientes/victor-lopes/fineline.jpg"
+    },
+    {
+      "nome": "Escrita",
+      "foto": "clientes/victor-lopes/escrita.jpg"
+    },
+    {
+      "nome": "Arte disponível",
+      "foto": "clientes/victor-lopes/disponivel.jpg"
+    }
   ],
   "tamanhos": [
     "Pequena · até 10 cm",
