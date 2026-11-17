@@ -1,0 +1,19 @@
+/* Victor Lopes: pele do site (café envelhecido + ouro-palha da Morpheus, Barlow Condensed, cantos retos). */
+:root { --ouro: #f2dc9b; --ouro-2: #d8c798; --cafe: #1b120b; }
+body { background: var(--cafe); }
+::selection { background: var(--ouro); color: var(--cafe); }
+
+h1 { font: 700 clamp(40px, 7vw, 76px)/.92 var(--f-titulo); text-transform: uppercase; letter-spacing: .01em; color: var(--ouro); }
+.lead { font: 400 17px/1.55 var(--f-texto); color: var(--texto); opacity: .82; }
+h3 { font: 600 clamp(22px, 3vw, 28px)/1 var(--f-titulo); text-transform: uppercase; letter-spacing: .04em; color: var(--ouro); }
+
+.pr button { font: 500 12px/1 var(--f-rotulo); letter-spacing: .14em; text-transform: uppercase; }
+.estilos b, .grade b { font-family: var(--f-titulo); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; font-size: 17px; }
+.estilos button { border-color: var(--linha); }
+.estilos img { filter: grayscale(.25) sepia(.12); transition: filter .35s var(--ease), transform .5s var(--ease); }
+.estilos button:hover img, .estilos button[aria-pressed="true"] img { filter: none; }
+
+/* dentro do site (vitrine): o capítulo do site já tem título e topo próprios; o fundo é o papel do site */
+.vitrine, .vitrine body { background: transparent; }
+.vitrine .topo, .vitrine .cab { display: none; }
+.vitrine main { padding-top: 4px; }

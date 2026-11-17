@@ -1,0 +1,58 @@
+{
+  "slug": "victor-lopes",
+  "nome": "Victor Lopes",
+  "titulo": "Orçamento | Victor Lopes",
+  "site": "https://azeugral.github.io/victor-lopes/",
+  "siteRotulo": "victorlopes.tattoo",
+  "dominios": [],
+  "modo": "whatsapp",
+  "whatsapp": "5511994129160",
+  "instagram": "https://www.instagram.com/victorlopes.tattoo/",
+  "agenda": {
+    "horario": "10:00-19:00",
+    "dias": [1, 2, 3, 4, 5, 6]
+  },
+  "logo": "clientes/victor-lopes/logo.webp",
+  "favicon": "clientes/victor-lopes/favicon-32.png",
+  "icone192": "clientes/victor-lopes/icon-192.png",
+  "css": "clientes/victor-lopes/skin.css",
+  "og": "https://azeugral.github.io/victor-lopes/img/og.jpg",
+  "fontes": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
+  "tema": {
+    "fundo": "#1b120b",
+    "texto": "#e9dcbc",
+    "titulo": "#f2dc9b",
+    "apoio": "#a8977a",
+    "linha": "rgba(242,220,155,.18)",
+    "palco": "#24180f",
+    "destaque": "#f2dc9b",
+    "sobre-destaque": "#1b120b",
+    "destaque-texto": "#f2dc9b",
+    "zona": "rgba(242,220,155,.22)",
+    "selecao": "rgba(242,220,155,.55)",
+    "chanfro": "0px",
+    "f-titulo": "\"Barlow Condensed\", \"Arial Narrow\", system-ui, sans-serif",
+    "f-texto": "\"Barlow\", system-ui, sans-serif",
+    "f-rotulo": "\"IBM Plex Mono\", ui-monospace, monospace"
+  },
+  "textos": {
+    "titulo": "Monte seu projeto",
+    "sub": "Toque no corpo, escolha o estilo e o melhor dia. O pedido chega pronto no WhatsApp do Victor.",
+    "ola": "Olá, Victor!",
+    "fecho": "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.",
+    "ideia": "Ex.: lírios com um vaso, seguindo o antebraço."
+  },
+  "estilos": [
+    { "nome": "Blackwork", "foto": "clientes/victor-lopes/blackwork.jpg" },
+    { "nome": "Fine line", "foto": "clientes/victor-lopes/fineline.jpg" },
+    { "nome": "Escrita", "foto": "clientes/victor-lopes/escrita.jpg" },
+    { "nome": "Arte disponível", "foto": "clientes/victor-lopes/disponivel.jpg" }
+  ],
+  "tamanhos": [
+    "Pequena · até 10 cm",
+    "Média · 10 a 20 cm",
+    "Grande · mais de 20 cm",
+    "Fechar região inteira"
+  ],
+  "cores": []
+}
