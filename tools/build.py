@@ -90,7 +90,9 @@ def main():
     hosts, primeiro = {}, None
     for f in sorted(glob.glob("clientes/*.json")):
         c = json.load(open(f, encoding="utf8"))
-        primeiro = primeiro or (c if c.get("modo") != "demo" else None)
+        # raiz padrao: Maronez (piloto); sem ele, o primeiro cliente que nao e demo
+        if c["slug"] == "maronez" or not primeiro:
+            primeiro = c if c.get("modo") != "demo" else primeiro
         for h in c.get("dominios", []):
             hosts[h] = c["slug"]
         os.makedirs(c["slug"], exist_ok=True)

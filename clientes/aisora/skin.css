@@ -1,0 +1,20 @@
+/* Aisora: preto quase puro, off-white, Archivo expandida nos títulos, Plex Mono nos rótulos, cantos retos. */
+:root { --w: #f3f3f0; --k: #060606; }
+body { background: #0c0c0c; }
+::selection { background: var(--w); color: var(--k); }
+
+h1 { font: 800 clamp(34px, 6vw, 64px)/.9 var(--f-titulo); font-stretch: 118%; letter-spacing: -.025em; text-transform: uppercase; color: var(--w); }
+.lead { font: 400 15px/1.6 var(--f-texto); color: #c9c9c6; }
+h3 { font: 800 clamp(20px, 2.6vw, 28px)/1 var(--f-titulo); font-stretch: 112%; letter-spacing: -.01em; text-transform: uppercase; color: var(--w); }
+h3 em { font: 400 italic .9em/1 "Instrument Serif", Georgia, serif; text-transform: none; letter-spacing: 0; color: #a4a4a1; }
+
+.pr button { font: 500 11px/1 var(--f-rotulo); letter-spacing: .14em; text-transform: uppercase; }
+.estilos b, .grade b { font-family: var(--f-titulo); font-weight: 700; font-stretch: 108%; text-transform: uppercase; letter-spacing: .01em; font-size: 15px; }
+.estilos button { border-color: var(--linha); background: #000; }
+.estilos img { filter: grayscale(1) brightness(.62) contrast(1.05); transition: filter .45s var(--ease), transform .7s var(--ease); }
+.estilos button:hover img, .estilos button[aria-pressed="true"] img { filter: grayscale(1) brightness(1); }
+
+/* dentro do site (vitrine): o capítulo do site já tem título e topo próprios; fundo transparente sobre a fumaça */
+.vitrine, .vitrine body { background: transparent; }
+.vitrine .topo, .vitrine .cab, .vitrine .rod { display: none; }
+.vitrine main { padding-top: 4px; }
