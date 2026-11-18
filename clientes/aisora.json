@@ -39,10 +39,22 @@
     "ideia": "Ex.: uma hannya com flores, descendo pelo antebraço."
   },
   "estilos": [
-    {"nome": "Blackwork", "foto": "clientes/aisora/blackwork.jpg"},
-    {"nome": "Geek / Anime", "foto": "clientes/aisora/geek.jpg"},
-    {"nome": "Oriental", "foto": "clientes/aisora/oriental.jpg"},
-    {"nome": "Arte disponível", "foto": "clientes/aisora/disponivel.jpg"}
+    {
+      "nome": "Blackwork",
+      "foto": "clientes/aisora/blackwork.jpg"
+    },
+    {
+      "nome": "Geek / Anime",
+      "foto": "clientes/aisora/geek.jpg"
+    },
+    {
+      "nome": "Oriental",
+      "foto": "clientes/aisora/oriental.jpg"
+    },
+    {
+      "nome": "Arte disponível",
+      "foto": "clientes/aisora/disponivel.jpg"
+    }
   ],
   "tamanhos": [
     "Pequeno · até 10 cm",
@@ -50,5 +62,9 @@
     "Grande · 20 a 30 cm",
     "Fechamento · 30 cm ou mais"
   ],
-  "cores": ["Preto e branco", "Preto e vermelho"]
+  "cores": [
+    "Preto e branco",
+    "Preto e vermelho"
+  ],
+  "layout": "lado"
 }

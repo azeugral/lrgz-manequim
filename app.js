@@ -234,7 +234,7 @@
     return h;
   }
   function telaProjeto() {
-    const tiles = C.estilos.map((e) => `<button data-v="${esc(e.nome)}" aria-pressed="${D.estilo === e.nome}">${e.foto ? `<img src="${esc(url(e.foto))}" alt="" loading="lazy">` : `<span class="sem"><img src="${esc(url(C.logo))}" alt=""></span>`}<b>${esc(e.nome)}</b></button>`).join("");
+    const tiles = C.estilos.map((e) => `<button data-v="${esc(e.nome)}" aria-pressed="${D.estilo === e.nome}">${e.foto ? `<img src="${esc(url(e.foto))}" alt="">` : `<span class="sem"><img src="${esc(url(C.logo))}" alt=""></span>`}<b>${esc(e.nome)}</b></button>`).join("");
     const tams = C.tamanhos.map((t) => { const [n, m] = t.split(" · "); return `<button data-v="${esc(t)}" aria-pressed="${D.tam === t}"><b>${esc(n)}</b>${m ? `<small>${esc(m)}</small>` : ""}</button>`; }).join("");
     const cores = C.cores && C.cores.length ? `<h3>Cor <em>opcional</em></h3><div class="grade g${C.cores.length}" data-k="cor">${C.cores.map((c) => `<button data-v="${esc(c)}" aria-pressed="${D.cor === c}"><b>${esc(c)}</b></button>`).join("")}</div>` : "";
     return `<h3>Estilo</h3><div class="estilos g${C.estilos.length}" data-k="estilo">${tiles}</div>
@@ -468,6 +468,8 @@
     document.body.dataset.passo = passo;
     $("#local").hidden = passo !== 0;
     $("#tela").hidden = passo === 0;
+    // layout "lado" (Aisora): o manequim fica à direita em todos os passos, só para referência
+    if (passo !== 0 && C.layout === "lado") desenhaPalco();
     if (passo === 0) { desenhaPalco(); $("#painel").innerHTML = painelLocal(); }
     else $("#tela").innerHTML = `<div class="entra">${passo === 1 ? telaProjeto() : passo === HOR ? telaHorario() : telaEnviar()}</div>`;
     if (passo === HOR) buscarAgenda();
