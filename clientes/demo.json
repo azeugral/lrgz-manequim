@@ -69,5 +69,32 @@
     "texto": "Quero no meu estúdio",
     "url": "https://wa.me/5519984428872?text=Oi%2C%20testei%20o%20L%20R%20G%20Z%20Agenda%20no%20site%20e%20quero%20no%20meu%20est%C3%BAdio."
   },
-  "css": "clientes/demo/skin.css"
+  "css": "clientes/demo/skin.css",
+  "provador": {
+    "titulo": "Prove os disponíveis",
+    "sub": "Gire o corpo, arraste um disponível até a pele e ajuste tamanho, giro e cor. A tinta acompanha as curvas como ficaria tatuada.",
+    "flashes": [
+      {
+        "id": "mariposa",
+        "nome": "Mariposa lunar",
+        "img": "clientes/demo/flash-blackwork.jpg"
+      },
+      {
+        "id": "andorinha",
+        "nome": "Andorinha e rosa",
+        "img": "clientes/demo/flash-old-school.jpg",
+        "colorido": true
+      },
+      {
+        "id": "leao",
+        "nome": "Leão",
+        "img": "clientes/demo/flash-realismo.jpg"
+      },
+      {
+        "id": "fineline",
+        "nome": "Ramo de flores",
+        "img": "clientes/demo/flash-fine-line.jpg"
+      }
+    ]
+  }
 }

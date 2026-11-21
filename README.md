@@ -30,3 +30,15 @@ Opcional. Com o bloco `agenda` no JSON, o pedido ganha o passo "Horário" (4 pas
 ## Fotos da demo
 
 Os estilos da demo mostram folhas de "disponíveis": desenhos em papel branco com a marca EXEMPLO no canto, nunca corpos reais. `clientes/demo/flash-{fine-line,blackwork,realismo,old-school}.jpg` (600x750) foram gerados por IA (Figma, gpt-image) e montados com a marca em Michroma. O cartão (número no canto, nome na faixa de baixo) está em `clientes/demo/skin.css`. Cliente real usa fotos do próprio portfólio.
+
+## Provador 3D dos disponíveis
+
+Corpo 3D realista (feminino e masculino, malhas da Blender Studio, CC0, em `assets/3d/`) onde a pessoa arrasta os disponíveis do estúdio até a pele, gira o corpo, ajusta tamanho, giro e cor, e pede o orçamento com a imagem da montagem. A tinta acompanha as curvas (dá a volta no braço) e o local sai com nome e lado ("Antebraço direito", "Ombro esquerdo").
+
+- Ligar para um cliente: bloco `provador` no JSON, com `flashes` = `[{ "id", "nome", "img", "colorido"? }]` (`img` = foto da folha em fundo branco). Opcionais: `titulo`, `sub`, `rotulo` (padrão "Disponíveis"), `cores` (padrão preto/vermelho/azul), `moldura` (cor da seleção).
+- `python tools/provador.py <slug>` transforma cada folha em tinta recortada (`clientes/<slug>/provador/`). `colorido: true` guarda as cores (botão "Original").
+- `python tools/build.py` gera `/<slug>/provador/`. No domínio do cliente, `/provador` também funciona (middleware).
+- `modo` do cliente vale aqui: WhatsApp manda imagem + texto (compartilhar no celular; no computador baixa a imagem, copia o texto e abre a conversa), `dm` abre o Instagram, `demo` mostra "o que o estúdio recebe".
+- `?vitrine=1`: dentro de outro site (lrgz.com.br/agenda), avisa a própria altura com `postMessage({manequim:1, altura})`.
+- Cache: `PV_V` no build.py (subir a cada mudança no provador).
+- Origem: provador do Taffa (azeugral/taffa, provador.html).

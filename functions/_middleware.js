@@ -4,8 +4,9 @@ const HOSTS = {"orcamento.maronez.com.br": "maronez", "manequim.maronez.com.br":
 export async function onRequest(ctx) {
   const u = new URL(ctx.request.url);
   const slug = HOSTS[u.hostname];
-  if (slug && (u.pathname === "/" || u.pathname === "/index.html")) {
-    u.pathname = `/${slug}/`;
+  const pv = /^\/provador\/?(index\.html)?$/.test(u.pathname);
+  if (slug && (pv || u.pathname === "/" || u.pathname === "/index.html")) {
+    u.pathname = pv ? `/${slug}/provador/` : `/${slug}/`;
     const r = await ctx.env.ASSETS.fetch(new Request(u.toString(), ctx.request));
     return new Response(r.body, r);
   }

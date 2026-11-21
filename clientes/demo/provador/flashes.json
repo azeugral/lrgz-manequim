@@ -1,0 +1,23 @@
+[
+ {
+  "id": "mariposa",
+  "nome": "Mariposa lunar",
+  "r": 1.1543
+ },
+ {
+  "id": "andorinha",
+  "nome": "Andorinha e rosa",
+  "r": 1.4602,
+  "colorido": true
+ },
+ {
+  "id": "leao",
+  "nome": "Leão",
+  "r": 1.3263
+ },
+ {
+  "id": "fineline",
+  "nome": "Ramo de flores",
+  "r": 3.0258
+ }
+]
