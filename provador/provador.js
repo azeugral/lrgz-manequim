@@ -18,7 +18,14 @@ const D3 = `${BASE}assets/3d/`;
 const CORES = PV.cores || null;
 const TINTA = "#151517";
 const TOQUE = matchMedia("(pointer: coarse)").matches;
-const GIRO_SENTIDO = 1;
+// ponto 3D -> posição na tela; e para que lado o desenho gira na tela quando o giro aumenta
+function naTela(p) { const c = p.clone().project(camera), r = renderer.domElement.getBoundingClientRect(); return { x: (c.x + 1) / 2 * r.width + r.left, y: (1 - c.y) / 2 * r.height + r.top }; }
+function sentidoNaTela(q) {
+  const ang = (g) => { const g0 = q.giro; q.giro = g; const Y = eixos(q).Y; q.giro = g0;
+    const a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x); };
+  let d = ang(q.giro + 5) - ang(q.giro); d = Math.atan2(Math.sin(d), Math.cos(d));
+  return d >= 0 ? 1 : -1;
+}
 const ALTURA = 1.70;
 const Q = new URLSearchParams(location.search);
 const DEBUG = Q.has("zonas");
@@ -420,7 +427,7 @@ function desenhaMoldura() {
 function mostraSel() {
   const q = pecas[atual];
   desenhaMoldura();
-  if (!q) { localEl.hidden = true; dica.hidden = false; dica.textContent = pecas.length ? "Toque numa peça para ajustar" : "Arraste um desenho até a pele"; ajuste.setAttribute("aria-disabled", "true"); $("#aj-nome").textContent = pecas.length ? "Toque numa peça no corpo" : "Ponha um desenho no corpo"; return; }
+  if (!q) { localEl.hidden = true; dica.hidden = false; dica.textContent = pecas.length ? "Toque numa peça para ajustar" : TOQUE ? "Toque num desenho para pôr no corpo" : "Arraste um desenho até a pele"; ajuste.setAttribute("aria-disabled", "true"); $("#aj-nome").textContent = pecas.length ? "Toque numa peça no corpo" : "Ponha um desenho no corpo"; return; }
   ajuste.setAttribute("aria-disabled", "false");
   $("#aj-nome").textContent = q.nome;
   rTam.value = q.cm; oTam.textContent = `${q.cm} cm`;
@@ -559,9 +566,9 @@ function montaGaveta() {
     });
   });
   // celular: a grade vira uma faixa de 3 por vez; os pontos mostram a página
-  const pontos = $("#pontos"), pags = Math.ceil(FL.length / 3);
+  const pontos = $("#pontos"), pags = Math.max(1, Math.ceil(FL.length / 5));
   pontos.innerHTML = Array.from({ length: pags }, (_, k) => `<i data-k="${k}"></i>`).join("");
-  const marca = () => { const k = Math.round(gaveta.scrollLeft / Math.max(1, gaveta.clientWidth)); $$("i", pontos).forEach((p, n) => p.classList.toggle("ativo", n === k)); };
+  const marca = () => { const max = gaveta.scrollWidth - gaveta.clientWidth, k = max > 0 ? Math.round(gaveta.scrollLeft / max * (pags - 1)) : 0; $$("i", pontos).forEach((p, n) => p.classList.toggle("ativo", n === k)); };
   gaveta.addEventListener("scroll", () => requestAnimationFrame(marca), { passive: true }); marca();
 }
 
@@ -579,7 +586,9 @@ tela.addEventListener("pointerdown", (e) => {
     const q = gesto && gesto.tipo === "move" ? gesto.q : pecas[atual];
     if (q && dedos.size === 2) {
       const m = par();
-      gesto = { tipo: "pinca", q, d0: Math.max(m.d, 1), a0: m.a, cm0: q.cm, g0: q.giro };
+      const c = naTela(q.p);
+      gesto = { tipo: "pinca", q, d0: Math.max(m.d, 1), cm0: q.cm, g0: q.giro, aAnt: m.a, volta: 0, girando: false, k: sentidoNaTela(q),
+        ox: c.x - m.x, oy: c.y - m.y };
       controles.enabled = false; palco.classList.add("pega");
       try { tela.setPointerCapture(e.pointerId); } catch (_) {}
       e.stopImmediatePropagation(); return;
@@ -603,9 +612,21 @@ tela.addEventListener("pointermove", (e) => {
   if (gesto && gesto.tipo === "pinca") {
     e.stopImmediatePropagation();
     if (dedos.size < 2) return;
-    const m = par(), q = gesto.q;
-    q.cm = THREE.MathUtils.clamp(Math.round(gesto.cm0 * m.d / gesto.d0), 4, 45);
-    q.giro = angulo(gesto.g0 - THREE.MathUtils.radToDeg(m.a - gesto.a0) * GIRO_SENTIDO);
+    const m = par(), q = gesto.q, G = gesto;
+    q.cm = THREE.MathUtils.clamp(Math.round(G.cm0 * m.d / G.d0), 4, 45);
+    // giro: soma o quanto os dedos giraram (sem pulo em ±180°); só começa depois de 6° para não girar sem querer no zoom
+    let da = m.a - G.aAnt; da = Math.atan2(Math.sin(da), Math.cos(da)); G.aAnt = m.a;
+    G.volta += THREE.MathUtils.radToDeg(da);
+    if (!G.girando && Math.abs(G.volta) > 6) { G.girando = true; G.volta = 0; }
+    if (G.girando) {
+      let g = G.g0 + G.volta * G.k;   // k: o desenho gira na tela para o mesmo lado dos dedos, em qualquer vista
+      const reto = Math.round(g / 90) * 90;
+      if (Math.abs(g - reto) < 5) { if (!G.preso && navigator.vibrate) navigator.vibrate(8); G.preso = true; g = reto; } else G.preso = false;
+      q.giro = angulo(g);
+    }
+    // os dois dedos seguram o desenho: o meio deles leva a peça junto
+    const p = tocaCorpo(m.x + G.ox, m.y + G.oy);
+    if (p && p.distanceTo(q.p) > .002) { q.p.copy(p); q.n = normalEm(p, Math.min(.06, q.cm / 100 / 3 + .015)); }
     redesenha(q); return;
   }
   if (!gesto || gesto.tipo !== "move") {
@@ -776,11 +797,19 @@ function pintaZonas(geo, nome) {
   window.__zonas = Object.keys(mapa);
   corpoAtual = ant;
 }
-window.__provador = { pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(FL[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista };
+window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(FL[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista };
 
 /* ---------- início ---------- */
 palco.classList.add("vazio");
 if (TOQUE) $(".pv-sob").textContent = "Toque num desenho para pôr no corpo. Deslize para ver todos.";
+if (TOQUE) dica.textContent = "Toque num desenho para pôr no corpo";
+/* celular: os disponíveis saem da coluna e viram uma bandeja colada embaixo do corpo */
+const trilho = $("#trilho"), sobEl = $(".pv-sob"), mq = matchMedia("(max-width: 1080px)");
+function arrumaTrilho() {
+  if (mq.matches) trilho.append(gaveta, $("#pontos"));
+  else sobEl.before(gaveta, $("#pontos"));
+}
+mq.addEventListener("change", arrumaTrilho); arrumaTrilho();
 ajustaTamanho();
 requestAnimationFrame(quadro);
 fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); });

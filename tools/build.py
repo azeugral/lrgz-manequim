@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "10"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "11"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -118,6 +118,7 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-ferr" id="ferr" role="toolbar" aria-label="Ajustar o desenho escolhido"><button type="button" data-f="menor" aria-label="Diminuir"><svg><use href="#menos"/></svg><span>Menor</span></button><button type="button" data-f="maior" aria-label="Aumentar"><svg><use href="#mais"/></svg><span>Maior</span></button><button type="button" data-f="gira" aria-label="Girar 15 graus"><svg><use href="#roda"/></svg><span>Girar</span></button><button type="button" data-f="espelha" aria-label="Espelhar"><svg><use href="#espelha"/></svg><span>Espelhar</span></button><button type="button" data-f="tira" aria-label="Tirar do corpo"><svg><use href="#lixo"/></svg><span>Tirar</span></button><button type="button" data-f="ok" aria-label="Pronto"><svg><use href="#certo"/></svg><span>Pronto</span></button></div>
 <div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
 </section>
+<div class="pv-trilho" id="trilho" aria-label="Disponíveis"></div>
 <div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
 </div>
 <aside class="pv-col pv-esq">

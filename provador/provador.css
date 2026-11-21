@@ -229,19 +229,23 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-palco.sel.ativo .pv-ferr { opacity: 1; visibility: visible; }
   .pv-palco.sel .pv-base { opacity: 0; pointer-events: none; }
 
-  /* disponíveis em faixa: 3 por vez, desliza para o lado, colada no corpo */
-  .pv-esq { padding-bottom: 16px; }
-  .pv-gaveta { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 2 * 10px) / 3); gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+  /* disponíveis numa bandeja colada embaixo do corpo: 5 por vez, desliza para o lado */
+  .pv-esq { display: none; }
+  .pv-trilho { padding: 12px 12px 10px; background: var(--palco); box-shadow: inset 0 0 0 1px var(--linha); margin-top: -1px; }
+  .pv-trilho .pv-gaveta { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 4 * 8px) / 5); gap: 8px; overflow-x: auto; overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .pv-gaveta::-webkit-scrollbar { display: none; }
-  .pv-gaveta li:nth-child(3n + 1) { scroll-snap-align: start; }
-  .pv-gaveta button:hover { transform: none; }
-  .pv-pontos { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+  .pv-trilho .pv-gaveta::-webkit-scrollbar { display: none; }
+  .pv-trilho .pv-gaveta li { scroll-snap-align: start; gap: 0; }
+  .pv-trilho .pv-gaveta li span { display: none; }
+  .pv-trilho .pv-gaveta button { padding: 22% 12% 10%; }
+  .pv-trilho .pv-gaveta button:hover { transform: none; }
+  .pv-trilho .pv-gaveta em { top: 5px; font-size: 8px; }
+  .pv-pontos { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
   .pv-pontos i { width: 18px; height: 2px; background: var(--linha); transition: background-color .3s var(--ease); }
   .pv-pontos i.ativo { background: var(--titulo, var(--texto)); }
-  .pv-sob { margin-top: 10px; }
 }
 @media (max-width: 360px) {
   .pv-ferr button span { display: none; }
   .pv-ferr button { height: 48px; }
 }
+.pv-trilho:empty { display: none; }
