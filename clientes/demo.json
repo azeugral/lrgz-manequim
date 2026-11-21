@@ -72,7 +72,7 @@
   "css": "clientes/demo/skin.css",
   "provador": {
     "titulo": "Prove os disponíveis",
-    "sub": "Gire o corpo, arraste um disponível até a pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.",
+    "sub": "Gire o corpo, ponha um disponível na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.",
     "flashes": [
       {
         "id": "mariposa",

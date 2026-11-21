@@ -17,6 +17,8 @@ const D3 = `${BASE}assets/3d/`;
 // tinta: cada desenho na cor da própria folha (preto ou colorido). Trocar a cor só se o cliente pedir (PV.cores).
 const CORES = PV.cores || null;
 const TINTA = "#151517";
+const TOQUE = matchMedia("(pointer: coarse)").matches;
+const GIRO_SENTIDO = 1;
 const ALTURA = 1.70;
 const Q = new URLSearchParams(location.search);
 const DEBUG = Q.has("zonas");
@@ -425,10 +427,11 @@ function mostraSel() {
   rGiro.value = Math.round(q.giro); oGiro.textContent = `${Math.round(q.giro)}°`;
   $$("#pv-cores button").forEach((b) => { b.setAttribute("aria-pressed", b.dataset.cor === q.cor); if (b.dataset.cor === "original") b.hidden = !q.colorido; });
   localEl.hidden = false; dica.hidden = true;
-  localEl.innerHTML = `<b>${q.zona}</b> · ~${q.cm} cm`;
+  localEl.innerHTML = `<b>${esc(q.nome)}</b> · ${q.zona} · ~${q.cm} cm · ${Math.round(q.giro)}°${TOQUE ? "<small>Pinça muda o tamanho · gire os dois dedos para girar</small>" : ""}`;
 }
 function escolhe(i) {
   atual = i; mostraSel();
+  palco.classList.toggle("sel", i >= 0);
   $$("li", lista).forEach((li) => li.classList.toggle("ativo", +li.dataset.i === i));
 }
 async function poe(f, p) {
@@ -552,20 +555,36 @@ function montaGaveta() {
     b.addEventListener("click", () => {
       if (b.dataset.arrastou) { delete b.dataset.arrastou; return; }
       poe(f, centroDaTela());
-      if (innerWidth <= 980) palco.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (innerWidth <= 1080 && !VITRINE) { const r = palco.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) palco.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
     });
   });
+  // celular: a grade vira uma faixa de 3 por vez; os pontos mostram a página
+  const pontos = $("#pontos"), pags = Math.ceil(FL.length / 3);
+  pontos.innerHTML = Array.from({ length: pags }, (_, k) => `<i data-k="${k}"></i>`).join("");
+  const marca = () => { const k = Math.round(gaveta.scrollLeft / Math.max(1, gaveta.clientWidth)); $$("i", pontos).forEach((p, n) => p.classList.toggle("ativo", n === k)); };
+  gaveta.addEventListener("scroll", () => requestAnimationFrame(marca), { passive: true }); marca();
 }
 
 /* ---------- palco: peça arrasta pela pele; fora dela, o corpo gira ---------- */
 // estes ouvintes entram antes dos do OrbitControls, então decidem primeiro
 const tela = renderer.domElement;
-let gesto = null; const dedos = new Set();
+let gesto = null; const dedos = new Map();   // dedo -> posição
+const par = () => { const [a, b] = [...dedos.values()]; return { d: Math.hypot(b.x - a.x, b.y - a.y), a: Math.atan2(b.y - a.y, b.x - a.x), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
+const angulo = (g) => (((g % 360) + 540) % 360) - 180;
 tela.addEventListener("pointerdown", (e) => {
-  dedos.add(e.pointerId);
+  dedos.set(e.pointerId, { x: e.clientX, y: e.clientY });
   anim = null;
-  if (dedos.size > 1) {   // segundo dedo: o gesto vira zoom/giro do OrbitControls
-    if (gesto) { gesto = null; controles.enabled = true; palco.classList.remove("pega"); }
+  if (dedos.size > 1) {
+    // dois dedos com um desenho escolhido: pinça = tamanho, girar os dedos = giro (como editar uma imagem)
+    const q = gesto && gesto.tipo === "move" ? gesto.q : pecas[atual];
+    if (q && dedos.size === 2) {
+      const m = par();
+      gesto = { tipo: "pinca", q, d0: Math.max(m.d, 1), a0: m.a, cm0: q.cm, g0: q.giro };
+      controles.enabled = false; palco.classList.add("pega");
+      try { tela.setPointerCapture(e.pointerId); } catch (_) {}
+      e.stopImmediatePropagation(); return;
+    }
+    if (gesto && gesto.tipo !== "pinca") { gesto = null; controles.enabled = true; palco.classList.remove("pega"); }   // sem desenho: zoom do corpo
     return;
   }
   const p = tocaCorpo(e.clientX, e.clientY), i = acerta(p);
@@ -580,6 +599,15 @@ tela.addEventListener("pointerdown", (e) => {
 });
 let movePend = null;
 tela.addEventListener("pointermove", (e) => {
+  if (dedos.has(e.pointerId)) dedos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (gesto && gesto.tipo === "pinca") {
+    e.stopImmediatePropagation();
+    if (dedos.size < 2) return;
+    const m = par(), q = gesto.q;
+    q.cm = THREE.MathUtils.clamp(Math.round(gesto.cm0 * m.d / gesto.d0), 4, 45);
+    q.giro = angulo(gesto.g0 - THREE.MathUtils.radToDeg(m.a - gesto.a0) * GIRO_SENTIDO);
+    redesenha(q); return;
+  }
   if (!gesto || gesto.tipo !== "move") {
     if (e.pointerType === "mouse" && !dedos.size) {   // passar o mouse: mostra se tem peça embaixo
       if (movePend) return;
@@ -591,7 +619,7 @@ tela.addEventListener("pointermove", (e) => {
   if (movePend) cancelAnimationFrame(movePend);
   movePend = requestAnimationFrame(() => {
     movePend = null;
-    const p = tocaCorpo(x, y); if (!p || !gesto) return;
+    const p = tocaCorpo(x, y); if (!p || !gesto || gesto.tipo !== "move") return;
     const q = gesto.q; q.p.copy(p); q.n = normalEm(p, Math.min(.06, q.cm / 100 / 3 + .015));
     desenha(q);
   });
@@ -599,11 +627,25 @@ tela.addEventListener("pointermove", (e) => {
 const solta = (e) => {
   dedos.delete(e.pointerId);
   if (gesto && gesto.tipo === "gira" && Math.hypot(e.clientX - gesto.x, e.clientY - gesto.y) < 5 && e.type === "pointerup" && atual >= 0) escolhe(-1);
-  if (gesto && gesto.tipo === "move") atualizaLista();
+  if (gesto && (gesto.tipo === "move" || gesto.tipo === "pinca")) atualizaLista();
+  if (gesto && gesto.tipo === "pinca") gesto = { tipo: "fim" };   // o dedo que sobra não arrasta nada
   if (!dedos.size) { gesto = null; controles.enabled = true; palco.classList.remove("pega"); }
 };
 tela.addEventListener("pointerup", solta);
 tela.addEventListener("pointercancel", solta);
+
+/* ---------- barra de ajuste no palco (celular) ---------- */
+$("#ferr").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-f]"), q = pecas[atual]; if (!b || !q) return;
+  const f = b.dataset.f;
+  if (f === "menor") q.cm = Math.max(4, q.cm - 2);
+  else if (f === "maior") q.cm = Math.min(45, q.cm + 2);
+  else if (f === "gira") q.giro = angulo(q.giro - 15);   // sentido do relógio, como o ícone
+  else if (f === "espelha") q.flip = !q.flip;
+  else if (f === "tira") return tira(atual);
+  else if (f === "ok") return escolhe(-1);
+  desenha(q); atualizaLista();
+});
 tela.addEventListener("wheel", (e) => {
   const q = pecas[atual];
   if (q && acerta(tocaCorpo(e.clientX, e.clientY)) === atual) {   // em cima da peça escolhida: tamanho (Shift: giro)
@@ -738,6 +780,7 @@ window.__provador = { pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => o
 
 /* ---------- início ---------- */
 palco.classList.add("vazio");
+if (TOQUE) $(".pv-sob").textContent = "Toque num desenho para pôr no corpo. Deslize para ver todos.";
 ajustaTamanho();
 requestAnimationFrame(quadro);
 fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); });

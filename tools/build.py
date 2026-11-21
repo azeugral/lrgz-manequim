@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "9"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "10"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -100,6 +100,8 @@ MOLDE_PV = """<!doctype html>
 <symbol id="espelha" viewBox="0 0 24 24"><path d="M12 3v18M9 7 3 17h6zm6 0 6 10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
 <symbol id="lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="gira" viewBox="0 0 24 24"><path d="M4 12a8 4 0 0 0 16 0a8 4 0 0 0-11-3.7M9 5.5 8.6 8.5l3 .6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 4v16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2.5"/></symbol>
+<symbol id="roda" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.1-5M17 3v4h-4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="certo" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
 <symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
@@ -113,18 +115,20 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
 <p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
 <div class="pv-capa" id="capa"><button type="button" class="pv-btn" id="pv-comecar"><svg><use href="#gira"/></svg><span>Começar</span></button><p>Gire o corpo e prove os desenhos na pele</p></div>
+<div class="pv-ferr" id="ferr" role="toolbar" aria-label="Ajustar o desenho escolhido"><button type="button" data-f="menor" aria-label="Diminuir"><svg><use href="#menos"/></svg><span>Menor</span></button><button type="button" data-f="maior" aria-label="Aumentar"><svg><use href="#mais"/></svg><span>Maior</span></button><button type="button" data-f="gira" aria-label="Girar 15 graus"><svg><use href="#roda"/></svg><span>Girar</span></button><button type="button" data-f="espelha" aria-label="Espelhar"><svg><use href="#espelha"/></svg><span>Espelhar</span></button><button type="button" data-f="tira" aria-label="Tirar do corpo"><svg><use href="#lixo"/></svg><span>Tirar</span></button><button type="button" data-f="ok" aria-label="Pronto"><svg><use href="#certo"/></svg><span>Pronto</span></button></div>
 <div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
 </section>
 <div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
 </div>
 <aside class="pv-col pv-esq">
-<h2 class="pv-tit"><b>01</b>{rotulo}</h2>
+<h2 class="pv-tit"><b></b>{rotulo}</h2>
 <ul class="pv-gaveta" id="gaveta"></ul>
+<div class="pv-pontos" id="pontos" aria-hidden="true"></div>
 <p class="pv-sob">Arraste até o corpo ou toque para aplicar.</p>
 </aside>
 <aside class="pv-col pv-dir">
 <div class="pv-ajuste" id="ajuste" aria-disabled="true">
-<h2 class="pv-tit"><b>02</b>Ajuste</h2>
+<h2 class="pv-tit"><b></b>Ajuste</h2>
 <p class="pv-aj-nome" id="aj-nome">Escolha uma peça no corpo</p>
 <div class="pv-cores" id="pv-cores" role="group" aria-label="Cor da tinta"></div>
 <label class="pv-faixa"><span>Tamanho <output id="o-tam">12 cm</output></span><input type="range" id="r-tam" min="4" max="45" step="1" value="12"></label>
@@ -132,7 +136,7 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-acoes"><button type="button" class="pv-mini" id="b-espelha"><svg><use href="#espelha"/></svg>Espelhar</button><button type="button" class="pv-mini" id="b-apaga"><svg><use href="#lixo"/></svg>Tirar</button></div>
 </div>
 <div class="pv-mont">
-<h2 class="pv-tit"><b>03</b>Sua montagem</h2>
+<h2 class="pv-tit"><b></b>Sua montagem</h2>
 <ul class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ul>
 <div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
 <p class="pv-nota">Tamanho estimado para um corpo de 1,70&nbsp;m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
