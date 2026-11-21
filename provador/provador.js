@@ -45,7 +45,7 @@ $("#t-titulo").innerHTML = esc(PV.titulo || "Provador").replace(/\n/g, "<br>");
 $("#t-sub").textContent = PV.sub || "Gire o corpo, arraste um desenho até a pele e ajuste tamanho, giro e cor. A tinta acompanha as curvas do corpo como ficaria tatuada.";
 $("#pv-cores").innerHTML = ["original", ...Object.keys(CORES)].map((k) =>
   `<button type="button" data-cor="${k}" aria-pressed="false"${k === "original" ? " hidden" : ""}><i style="background:${k === "original" ? "conic-gradient(#c1121c 0 25%,#1d40d2 0 50%,#e8b21c 0 75%,#1f8a3b 0)" : CORES[k]}"></i>${k === "original" ? "Original" : k[0].toUpperCase() + k.slice(1)}</button>`).join("");
-$("#nota-quem").textContent = DEMO ? "o estúdio" : C.nome;
+$("#nota-quem").textContent = DEMO ? "O estúdio" : C.nome;
 if (DEMO) $("#b-pede span").textContent = "Enviar pedido";
 else if (C.modo === "dm") $("#b-pede span").textContent = "Pedir pelo Instagram";
 if (VITRINE) {
@@ -451,7 +451,7 @@ function tira(i) {
 function atualizaLista() {
   bPede.disabled = bSalva.disabled = !pecas.length;
   if (!pecas.length) { lista.innerHTML = '<li class="pv-vazio">Nenhum desenho no corpo ainda.</li>'; return; }
-  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<i style="--m:url(${DIR}${q.id}-p.webp);background:${CORES[q.cor]}"></i>`}
+  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<b class="pv-ico"><i style="--m:url(${DIR}${q.id}-p.webp);background:${CORES[q.cor]}"></i></b>`}
     <span>${esc(q.nome)}<small>${q.zona} · ~${q.cm} cm · ${NOME_COR[q.cor] || q.cor}</small></span></li>`).join("");
 }
 lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (!li) return; escolhe(+li.dataset.i); olhaPara(pecas[atual]); });
@@ -685,7 +685,7 @@ function mostraRecebido(blob, texto) {
   recebe.innerHTML = `<div class="pv-rec-cab"><p class="pv-rec-eb">Demonstração · nada foi enviado</p><h2>O que o estúdio recebe</h2><p>A montagem e o pedido chegam juntos no WhatsApp, com o local e o tamanho de cada desenho.</p></div>
     <div class="pv-zap"><div class="pv-zap-topo"><b>Seu Estúdio</b><small>WhatsApp</small></div>
       <div class="pv-zap-msg"><img src="${u}" alt="Montagem enviada pelo provador"><p>${esc(texto).replace(/\n/g, "<br>")}</p><time>${hora}</time></div></div>
-    <div class="pv-rec-acoes">${C.cta ? `<a class="pv-btn" href="${esc(C.cta.url)}" target="_blank" rel="noopener">${esc(C.cta.texto)}</a>` : ""}<button type="button" class="pv-btn linha" id="b-refaz">Montar de novo</button></div>`;
+    <div class="pv-rec-acoes">${C.cta ? `<a class="pv-btn" href="${esc(C.cta.url)}" target="_blank" rel="noopener">${esc(C.cta.texto)}</a>` : ""}<button type="button" class="pv-btn pv-vazado" id="b-refaz">Montar de novo</button></div>`;
   recebe.hidden = false;
   $("#b-refaz").addEventListener("click", () => {
     recebe.hidden = true;

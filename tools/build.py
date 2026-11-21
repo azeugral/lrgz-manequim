@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "2"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "3"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -126,7 +126,7 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-bloco">
 <h2>Sua montagem</h2>
 <ol class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ol>
-<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn linha" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
+<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
 <p class="pv-nota">O tamanho em centímetros é uma estimativa para um corpo de 1,70 m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
 </div>
 </aside>

@@ -89,8 +89,8 @@
   transition: opacity .3s var(--ease), box-shadow .3s var(--ease), background-color .3s var(--ease), color .3s var(--ease); }
 .pv-btn svg { width: 16px; height: 16px; }
 .pv-btn:hover { opacity: .88; }
-.pv-btn.linha { background: none; color: var(--texto); box-shadow: inset 0 0 0 1px var(--linha); }
-.pv-btn.linha:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--destaque); }
+.pv-btn.pv-vazado { background: none; color: var(--texto); box-shadow: inset 0 0 0 1px var(--linha); }
+.pv-btn.pv-vazado:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--destaque); }
 .pv-btn:disabled { opacity: .35; pointer-events: none; }
 .pv-nota { margin: 12px 0 0; font-size: 12px; line-height: 1.5; color: var(--apoio); }
 
@@ -146,3 +146,7 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-cores button { font-size: 10px; gap: 5px; letter-spacing: .02em; }
 }
 @media (prefers-reduced-motion: reduce) { .pv-palco.vazio .pv-dica { animation: none; } }
+/* miniatura da montagem: a tinta sobre um quadrado de papel (tinta preta some no fundo escuro) */
+.pv-lista li .pv-ico { display: grid; place-items: center; width: 36px; height: 36px; background: #f4f2ee; }
+.pv-lista li .pv-ico i { width: 30px; height: 30px; }
+.pv-lista li img { background: #f4f2ee; padding: 3px; }
