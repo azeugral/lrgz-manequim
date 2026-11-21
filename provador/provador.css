@@ -188,3 +188,8 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .vitrine .pv-pagina main { padding-left: 20px; padding-right: 20px; }
   .vitrine .pv-app { grid-template-columns: 272px minmax(0, 1fr) 272px; }
 }
+/* desenho colorido: 4 cores na mesma linha, rótulos mais justos */
+.pv-cores:has([data-cor="original"]:not([hidden])) button { font-size: 9px; letter-spacing: .02em; }
+/* na vitrine, sem rodapé e sem sobra embaixo */
+.vitrine .rod { display: none; }
+.vitrine .pv-pagina main { padding-bottom: 20px; }
