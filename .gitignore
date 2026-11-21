@@ -5,3 +5,4 @@ tools/src/v1/
 tools/grid*.jpg
 tools/ver.jpg
 .wrangler/
+tools/print-*.jpg
