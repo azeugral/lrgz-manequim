@@ -124,6 +124,8 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
 .vitrine, .vitrine body { scrollbar-width: none; }
 .vitrine ::-webkit-scrollbar { display: none; }
 .vitrine .pv-palco { position: relative; top: auto; max-height: 720px; }
+.vitrine .pv-pagina .cab { display: none; }   /* o título fica na página de fora */
+.vitrine .pv-pagina main { padding-top: clamp(16px, 3vw, 28px); }
 
 @media (max-width: 980px) {
   .pv-app { grid-template-columns: minmax(0, 1fr); }
