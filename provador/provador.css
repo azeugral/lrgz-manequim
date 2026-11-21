@@ -183,3 +183,8 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-base { gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) { .pv-palco.vazio ~ .pv-legenda .pv-dica { animation: none; } .pv-gaveta button { transition: none; } }
+/* janela do lrgz.com.br/agenda: margens menores para o corpo ganhar largura */
+@media (min-width: 1081px) {
+  .vitrine .pv-pagina main { padding-left: 20px; padding-right: 20px; }
+  .vitrine .pv-app { grid-template-columns: 272px minmax(0, 1fr) 272px; }
+}
