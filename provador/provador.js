@@ -14,8 +14,9 @@ const BASE = new URL(window.MANEQUIM_BASE || "./", location.href).href;
 const url = (p) => (/^https?:/.test(p) ? p : BASE + p);
 const DIR = `${BASE}clientes/${C.slug}/provador/`;
 const D3 = `${BASE}assets/3d/`;
-const CORES = PV.cores || { preto: "#151517", vermelho: "#c1121c", azul: "#1d40d2" };
-const NOME_COR = { original: "colorida", preto: "preto", vermelho: "vermelho", azul: "azul" };
+// tinta: cada desenho na cor da própria folha (preto ou colorido). Trocar a cor só se o cliente pedir (PV.cores).
+const CORES = PV.cores || null;
+const TINTA = "#151517";
 const ALTURA = 1.70;
 const Q = new URLSearchParams(location.search);
 const DEBUG = Q.has("zonas");
@@ -43,7 +44,8 @@ $("#marca").textContent = C.nome;
 }
 $("#t-titulo").innerHTML = esc(PV.titulo || "Provador").replace(/\n/g, "<br>");
 $("#t-sub").textContent = PV.sub || "Gire o corpo, arraste um desenho até a pele e ajuste tamanho, giro e cor. A tinta acompanha as curvas do corpo como ficaria tatuada.";
-$("#pv-cores").innerHTML = ["original", ...Object.keys(CORES)].map((k) =>
+if (!CORES) $("#pv-cores").remove();
+else $("#pv-cores").innerHTML = ["original", ...Object.keys(CORES)].map((k) =>
   `<button type="button" data-cor="${k}" aria-pressed="false"${k === "original" ? " hidden" : ""}><i style="background:${k === "original" ? "conic-gradient(#c1121c 0 25%,#1d40d2 0 50%,#e8b21c 0 75%,#1f8a3b 0)" : CORES[k]}"></i>${k === "original" ? "Original" : k[0].toUpperCase() + k.slice(1)}</button>`).join("");
 $("#nota-quem").textContent = DEMO ? "O estúdio" : C.nome;
 if (DEMO) $("#b-pede span").textContent = "Enviar pedido";
@@ -401,7 +403,7 @@ function desenha(q) {
   cena.add(q.malha);
   const orig = q.cor === "original";
   if (q.mat.map !== (orig ? q.texCor : q.tex)) { q.mat.map = orig ? q.texCor : q.tex; q.mat.needsUpdate = true; }
-  q.mat.color.set(orig ? "#ffffff" : CORES[q.cor]);
+  q.mat.color.set(orig ? "#ffffff" : q.cor === "base" ? TINTA : CORES[q.cor]);
   q.zona = onde(q.p, q.n);
   if (pecas[atual] === q) mostraSel();
   pedeQuadro();
@@ -435,7 +437,8 @@ async function poe(f, p) {
   const tex = new THREE.CanvasTexture(t.canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   let texCor = null;
   if (f.colorido) { texCor = new THREE.CanvasTexture(t.cor); texCor.colorSpace = THREE.SRGBColorSpace; texCor.anisotropy = 8; }
-  const cor0 = f.colorido ? "original" : Object.keys(CORES)[0];
+  const cor0 = f.colorido ? "original" : "base";
+  ativa();
   const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const q = { id: f.id, nome: f.nome, r: f.r, colorido: !!f.colorido, cm: 12, giro: 0, flip: false, cor: cor0, p: p.clone(), n: null, tex, texCor, mat };
   q.n = normalEm(q.p, .05);
@@ -455,7 +458,7 @@ function atualizaLista() {
   bPede.disabled = bSalva.disabled = !pecas.length;
   if (!pecas.length) { lista.innerHTML = '<li class="pv-vazio">Nenhum desenho no corpo ainda.</li>'; return; }
   // cartões iguais, centrados: miniatura no papel, nome, local e tamanho
-  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<i style="--m:url(${DIR}${q.id}-p.webp);background:${CORES[q.cor]}"></i>`}</b>
+  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<i style="--m:url(${DIR}${q.id}-p.webp);background:${q.cor === "base" ? TINTA : CORES[q.cor]}"></i>`}</b>
     <span>${esc(q.nome)}</span><small>${q.zona}</small><small>~${q.cm} cm</small></li>`).join("");
 }
 lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (!li) return; escolhe(+li.dataset.i); olhaPara(pecas[atual]); });
@@ -522,7 +525,8 @@ function montaGaveta() {
       const dx = e.clientX - ini.x, dy = e.clientY - ini.y;
       if (!fant) {
         const toque = e.pointerType !== "mouse";
-        if (Math.hypot(dx, dy) < 6 || (toque && Math.abs(dy) < Math.abs(dx))) return;
+        // no toque, a grade rola a página: o desenho entra com um toque (e depois anda pela pele)
+        if (toque || Math.hypot(dx, dy) < 6) return;
         try { b.setPointerCapture(e.pointerId); } catch (_) {}
         fant = document.createElement("div"); fant.className = "pv-fantasma" + (f.colorido ? " cor" : ""); fant.style.setProperty("--m", `url(${DIR}${f.id}-p.webp)`);
         document.body.appendChild(fant); document.body.classList.add("pv-arrasta");
@@ -672,7 +676,7 @@ async function montagem() {
   return new Promise((ok) => out.toBlob(ok, "image/png"));
 }
 function textoPedido() {
-  const l = pecas.map((q, i) => `${i + 1}. ${q.nome}\n   ${q.zona} · ~${q.cm} cm · ${NOME_COR[q.cor] || q.cor}`);
+  const l = pecas.map((q, i) => `${i + 1}. ${q.nome}\n   ${q.zona} · ~${q.cm} cm`);
   const ola = DEMO ? "Olá, Seu Estúdio!" : (C.textos && C.textos.ola) || `Olá, ${C.nome}!`;
   return `${ola} Montei no provador do site e queria orçar:\n\n${l.join("\n")}\n\nA imagem da montagem vai junto.`;
 }
@@ -737,5 +741,13 @@ palco.classList.add("vazio");
 ajustaTamanho();
 requestAnimationFrame(quadro);
 fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); });
+/* ---------- começar: até o clique, o corpo é só imagem e a página rola por cima dele ---------- */
+let ativo = false;
+function ativa() {
+  if (ativo) return;
+  ativo = true; palco.classList.add("ativo"); pedeQuadro();
+}
+$("#pv-comecar").addEventListener("click", ativa);
+
 trocaCorpo("feminino", true).catch((e) => { console.error(e); semTresD(); });
 carregaCorpo("masculino");   // já deixa o outro pronto

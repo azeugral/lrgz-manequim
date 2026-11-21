@@ -31,7 +31,7 @@
 /* disponíveis: grade 3 x 3, cartões de papel iguais */
 .pv-gaveta { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 8px; }
 .pv-gaveta li { display: grid; gap: 8px; min-width: 0; }
-.pv-gaveta button { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; padding: 18% 14% 12%; border: 0; touch-action: none; background: var(--papel); cursor: grab;
+.pv-gaveta button { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; padding: 18% 14% 12%; border: 0; touch-action: manipulation; background: var(--papel); cursor: grab;
   transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
 .pv-gaveta button:hover { box-shadow: 0 0 0 1px var(--destaque), 0 14px 30px -16px rgba(0, 0, 0, .8); transform: translateY(-2px); }
 .pv-gaveta button:active { transform: scale(.96); }
@@ -41,7 +41,7 @@
 .pv-gaveta span { font: 500 10px/1.2 var(--f-rotulo); letter-spacing: .12em; text-transform: uppercase; color: var(--apoio); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---------- palco ---------- */
-.pv-palco { position: relative; width: 100%; height: clamp(560px, 78svh, 780px); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+.pv-palco { position: relative; width: 100%; height: clamp(560px, 78svh, 780px); overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none;
   background: radial-gradient(58% 50% at 50% 44%, color-mix(in srgb, var(--titulo, var(--texto)) 13%, var(--palco)) 0%, var(--palco) 72%), var(--palco);
   box-shadow: inset 0 0 0 1px var(--linha); }
 .pv-tela { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; z-index: 1; transition: opacity .4s var(--ease); }
@@ -193,3 +193,16 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
 /* na vitrine, sem rodapé e sem sobra embaixo */
 .vitrine .rod { display: none; }
 .vitrine .pv-pagina main { padding-bottom: 20px; }
+
+/* ---------- capa "Começar": o 3D só pega o mouse e o dedo depois do clique (a página rola livre) ---------- */
+.pv-palco.ativo { touch-action: none; }
+.pv-palco:not(.ativo) .pv-tela { pointer-events: none; }
+.pv-capa { position: absolute; inset: 0; z-index: 5; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; text-align: center;
+  background: radial-gradient(60% 55% at 50% 50%, rgba(0, 0, 0, .1), rgba(0, 0, 0, .55)); transition: opacity .5s var(--ease), visibility .5s; }
+.pv-capa .pv-btn { min-width: 210px; box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .9); }
+.pv-capa .pv-btn svg { width: 20px; height: 20px; }
+.pv-capa p { margin: 0; max-width: 24ch; font: 500 11px/1.5 var(--f-rotulo); letter-spacing: .12em; text-transform: uppercase; color: var(--texto); text-shadow: 0 1px 12px rgba(0, 0, 0, .9); }
+.pv-palco.ativo .pv-capa { opacity: 0; visibility: hidden; pointer-events: none; }
+.pv-vistas, .pv-base { transition: opacity .5s var(--ease); }
+.pv-palco:not(.ativo) .pv-vistas, .pv-palco:not(.ativo) .pv-base { opacity: 0; pointer-events: none; }
+.pv-palco.carregando .pv-capa { opacity: 0; pointer-events: none; }

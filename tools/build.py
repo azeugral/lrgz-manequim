@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "8"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "9"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -99,6 +99,7 @@ MOLDE_PV = """<!doctype html>
 <symbol id="zap" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0a11.9 11.9 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0Zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.9 9.9 0 1 1 12 21.8Zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5l-.7-.3Z"/></symbol>
 <symbol id="espelha" viewBox="0 0 24 24"><path d="M12 3v18M9 7 3 17h6zm6 0 6 10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
 <symbol id="lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="gira" viewBox="0 0 24 24"><path d="M4 12a8 4 0 0 0 16 0a8 4 0 0 0-11-3.7M9 5.5 8.6 8.5l3 .6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 4v16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2.5"/></symbol>
 <symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
@@ -111,6 +112,7 @@ MOLDE_PV = """<!doctype html>
 <section class="pv-palco" id="palco" aria-label="Corpo 3D para provar os desenhos">
 <div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
 <p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
+<div class="pv-capa" id="capa"><button type="button" class="pv-btn" id="pv-comecar"><svg><use href="#gira"/></svg><span>Começar</span></button><p>Gire o corpo e prove os desenhos na pele</p></div>
 <div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
 </section>
 <div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
