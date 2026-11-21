@@ -118,6 +118,7 @@
         "nome": "Ânfora, cobra e yin-yang",
         "img": "assets/img/flash/31-g.webp"
       }
-    ]
+    ],
+    "semTopo": true
   }
 }

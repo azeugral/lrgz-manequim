@@ -153,6 +153,7 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
 .vitrine, .vitrine body { scrollbar-width: none; }
 .vitrine ::-webkit-scrollbar { display: none; }
 .vitrine .pv-pagina .cab { display: none; }
+.sem-topo .pv-pagina .topo { display: none; }
 .vitrine .pv-pagina main { padding-top: clamp(16px, 3vw, 28px); }
 .vitrine .pv-palco { height: clamp(540px, 64vw, 720px); }
 

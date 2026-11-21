@@ -37,6 +37,8 @@ const VITRINE = parent !== window && Q.has("vitrine");
 Object.entries(C.tema || {}).forEach(([k, v]) => document.documentElement.style.setProperty("--" + k, v));
 document.documentElement.dataset.cliente = C.slug;
 if (VITRINE) document.documentElement.classList.add("vitrine");
+// dentro do próprio site do cliente (PV.semTopo), sem o cabeçalho de Instagram e site: já estão na página de fora
+if (VITRINE && PV.semTopo) document.documentElement.classList.add("sem-topo");
 $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
 $("#marca").textContent = C.nome;
 {
