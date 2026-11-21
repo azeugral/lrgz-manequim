@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "3"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "6"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -99,35 +99,41 @@ MOLDE_PV = """<!doctype html>
 <symbol id="zap" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0a11.9 11.9 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0Zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.9 9.9 0 1 1 12 21.8Zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5l-.7-.3Z"/></symbol>
 <symbol id="espelha" viewBox="0 0 24 24"><path d="M12 3v18M9 7 3 17h6zm6 0 6 10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
 <symbol id="lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
 </svg>
 <header class="topo"><a id="insta" target="_blank" rel="noopener" hidden></a><div class="marca"><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
 <main id="provador">
 <div class="cab"><h1 id="t-titulo"></h1><p class="lead" id="t-sub"></p></div>
 <div class="pv-app">
+<div class="pv-centro">
 <section class="pv-palco" id="palco" aria-label="Corpo 3D para provar os desenhos">
 <div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
-<div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div>
-<div class="pv-zoom" role="group" aria-label="Zoom"><button type="button" id="z-mais" aria-label="Aproximar">+</button><button type="button" id="z-menos" aria-label="Afastar" disabled>&minus;</button></div>
 <p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
-<p class="pv-dica" id="dica">Arraste um desenho para o corpo · gire arrastando</p>
-<p class="pv-local" id="local" hidden></p>
+<div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
 </section>
-<aside class="pv-lado">
-<div class="pv-bloco"><h2>{rotulo}</h2><ul class="pv-gaveta" id="gaveta"></ul></div>
-<div class="pv-bloco pv-ajuste" id="ajuste" aria-disabled="true">
-<h2>Peça escolhida <span id="aj-nome"></span></h2>
-<div class="pv-cores" id="pv-cores" role="group" aria-label="Cor da tinta"></div>
-<label class="pv-faixa">Tamanho <output id="o-tam">12 cm</output><input type="range" id="r-tam" min="4" max="45" step="1" value="12"></label>
-<label class="pv-faixa">Giro <output id="o-giro">0°</output><input type="range" id="r-giro" min="-180" max="180" step="1" value="0"></label>
-<div class="pv-acoes"><button type="button" class="pv-mini" id="b-espelha"><svg><use href="#espelha"/></svg>Espelhar</button><button type="button" class="pv-mini" id="b-apaga"><svg><use href="#lixo"/></svg>Tirar</button></div>
-<p class="pv-atalhos">Arraste o corpo para girar e a peça para levá-la pela pele. No computador, a rodinha em cima da peça muda o tamanho (com Shift, gira). No celular, um dedo gira e dois aproximam.</p>
+<div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
 </div>
-<div class="pv-bloco">
-<h2>Sua montagem</h2>
-<ol class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ol>
+<aside class="pv-col pv-esq">
+<h2 class="pv-tit"><b>01</b>{rotulo}</h2>
+<ul class="pv-gaveta" id="gaveta"></ul>
+<p class="pv-sob">Arraste até o corpo ou toque para aplicar.</p>
+</aside>
+<aside class="pv-col pv-dir">
+<div class="pv-ajuste" id="ajuste" aria-disabled="true">
+<h2 class="pv-tit"><b>02</b>Ajuste</h2>
+<p class="pv-aj-nome" id="aj-nome">Escolha uma peça no corpo</p>
+<div class="pv-cores" id="pv-cores" role="group" aria-label="Cor da tinta"></div>
+<label class="pv-faixa"><span>Tamanho <output id="o-tam">12 cm</output></span><input type="range" id="r-tam" min="4" max="45" step="1" value="12"></label>
+<label class="pv-faixa"><span>Giro <output id="o-giro">0°</output></span><input type="range" id="r-giro" min="-180" max="180" step="1" value="0"></label>
+<div class="pv-acoes"><button type="button" class="pv-mini" id="b-espelha"><svg><use href="#espelha"/></svg>Espelhar</button><button type="button" class="pv-mini" id="b-apaga"><svg><use href="#lixo"/></svg>Tirar</button></div>
+</div>
+<div class="pv-mont">
+<h2 class="pv-tit"><b>03</b>Sua montagem</h2>
+<ul class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ul>
 <div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
-<p class="pv-nota">O tamanho em centímetros é uma estimativa para um corpo de 1,70 m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
+<p class="pv-nota">Tamanho estimado para um corpo de 1,70&nbsp;m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
 </div>
 </aside>
 </div>

@@ -1,14 +1,19 @@
 [
  {
   "id": "mariposa",
-  "nome": "Mariposa lunar",
+  "nome": "Mariposa",
   "r": 1.1543
  },
  {
   "id": "andorinha",
-  "nome": "Andorinha e rosa",
+  "nome": "Andorinha",
   "r": 1.4602,
   "colorido": true
+ },
+ {
+  "id": "serpente",
+  "nome": "Serpente",
+  "r": 1.9868
  },
  {
   "id": "leao",
@@ -16,8 +21,30 @@
   "r": 1.3263
  },
  {
-  "id": "fineline",
-  "nome": "Ramo de flores",
+  "id": "coracao",
+  "nome": "Coração",
+  "r": 1.4851,
+  "colorido": true
+ },
+ {
+  "id": "adaga",
+  "nome": "Adaga",
+  "r": 2.3873
+ },
+ {
+  "id": "caveira",
+  "nome": "Caveira",
+  "r": 1.7893
+ },
+ {
+  "id": "carpa",
+  "nome": "Carpa",
+  "r": 2.0,
+  "colorido": true
+ },
+ {
+  "id": "ramo",
+  "nome": "Ramo",
   "r": 3.0258
  }
 ]

@@ -76,14 +76,19 @@
     "flashes": [
       {
         "id": "mariposa",
-        "nome": "Mariposa lunar",
+        "nome": "Mariposa",
         "img": "clientes/demo/flash-blackwork.jpg"
       },
       {
         "id": "andorinha",
-        "nome": "Andorinha e rosa",
+        "nome": "Andorinha",
         "img": "clientes/demo/flash-old-school.jpg",
         "colorido": true
+      },
+      {
+        "id": "serpente",
+        "nome": "Serpente",
+        "img": "clientes/demo/folhas/serpente.jpg"
       },
       {
         "id": "leao",
@@ -91,8 +96,30 @@
         "img": "clientes/demo/flash-realismo.jpg"
       },
       {
-        "id": "fineline",
-        "nome": "Ramo de flores",
+        "id": "coracao",
+        "nome": "Coração",
+        "img": "clientes/demo/folhas/coracao.jpg",
+        "colorido": true
+      },
+      {
+        "id": "adaga",
+        "nome": "Adaga",
+        "img": "clientes/demo/folhas/adaga.jpg"
+      },
+      {
+        "id": "caveira",
+        "nome": "Caveira",
+        "img": "clientes/demo/folhas/caveira.jpg"
+      },
+      {
+        "id": "carpa",
+        "nome": "Carpa",
+        "img": "clientes/demo/folhas/carpa.jpg",
+        "colorido": true
+      },
+      {
+        "id": "ramo",
+        "nome": "Ramo",
         "img": "clientes/demo/flash-fine-line.jpg"
       }
     ]

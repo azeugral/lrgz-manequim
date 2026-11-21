@@ -199,7 +199,10 @@ const VISTAS = { f: [0, 0, 1], b: [0, 0, -1], l: [1, 0, 0] };
 let vista = "f", anim = null;
 function distanciaInteira() {
   const a = camera.aspect, t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-  return Math.max(1.84 / 2 / t, .72 / 2 / t / a);
+  // as barras de cima (vistas) e de baixo (corpo e zoom) ficam sobre o palco: o corpo cabe entre elas, centrado
+  const p = palco.getBoundingClientRect(), v = $(".pv-vistas").getBoundingClientRect();
+  const res = p.height ? Math.min(.4, 2 * (v.bottom - p.top + 10) / p.height) : .2;
+  return Math.max(1.80 / (1 - res) / 2 / t, .72 / 2 / t / a);
 }
 function vai(dir, alvo, dist, rapido) {
   const fim = { alvo: alvo.clone(), pos: alvo.clone().add(new THREE.Vector3(...dir).normalize().multiplyScalar(dist)) };
@@ -218,7 +221,7 @@ function passoAnim(agora) {
   camera.position.copy(controles.target).add(new THREE.Vector3().setFromSpherical(s));
   if (k >= 1) anim = null;
 }
-const ALVO = new THREE.Vector3(0, .9, 0);
+const ALVO = new THREE.Vector3(0, .87, 0);
 function mostraVista(v, rapido) {
   vista = v;
   $$(".pv-vistas button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.vista === v));
@@ -413,7 +416,7 @@ function desenhaMoldura() {
 function mostraSel() {
   const q = pecas[atual];
   desenhaMoldura();
-  if (!q) { localEl.hidden = true; ajuste.setAttribute("aria-disabled", "true"); $("#aj-nome").textContent = ""; return; }
+  if (!q) { localEl.hidden = true; dica.hidden = false; dica.textContent = pecas.length ? "Toque numa peça para ajustar" : "Arraste um desenho até a pele"; ajuste.setAttribute("aria-disabled", "true"); $("#aj-nome").textContent = pecas.length ? "Toque numa peça no corpo" : "Ponha um desenho no corpo"; return; }
   ajuste.setAttribute("aria-disabled", "false");
   $("#aj-nome").textContent = q.nome;
   rTam.value = q.cm; oTam.textContent = `${q.cm} cm`;
@@ -451,10 +454,12 @@ function tira(i) {
 function atualizaLista() {
   bPede.disabled = bSalva.disabled = !pecas.length;
   if (!pecas.length) { lista.innerHTML = '<li class="pv-vazio">Nenhum desenho no corpo ainda.</li>'; return; }
-  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<b class="pv-ico"><i style="--m:url(${DIR}${q.id}-p.webp);background:${CORES[q.cor]}"></i></b>`}
-    <span>${esc(q.nome)}<small>${q.zona} · ~${q.cm} cm · ${NOME_COR[q.cor] || q.cor}</small></span></li>`).join("");
+  // cartões iguais, centrados: miniatura no papel, nome, local e tamanho
+  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<i style="--m:url(${DIR}${q.id}-p.webp);background:${CORES[q.cor]}"></i>`}</b>
+    <span>${esc(q.nome)}</span><small>${q.zona}</small><small>~${q.cm} cm</small></li>`).join("");
 }
 lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (!li) return; escolhe(+li.dataset.i); olhaPara(pecas[atual]); });
+lista.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.closest("li[data-i]")) e.target.click(); });
 // leva a câmera até a peça
 function olhaPara(q) {
   if (!q) return;
@@ -503,7 +508,7 @@ function centroDaTela() {
   return h ? h.point : new THREE.Vector3(0, 1.2, 0);
 }
 function montaGaveta() {
-  gaveta.innerHTML = FL.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}</button><span>${esc(f.nome)}</span></li>`).join("");
+  gaveta.innerHTML = FL.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
   $$("button", gaveta).forEach((b) => {
     const f = FL[+b.dataset.i];
     let ini = null, fant = null;
