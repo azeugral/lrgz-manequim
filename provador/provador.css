@@ -34,6 +34,11 @@
 /* disponíveis: grade 3 x 3, cartões de papel iguais */
 .pv-gaveta { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 8px; }
 .pv-gaveta li { display: grid; gap: 8px; min-width: 0; }
+.pv-gaveta.muitos { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.pv-gaveta.muitos li { gap: 0; }
+.pv-gaveta.muitos span { display: none; }
+.pv-gaveta.muitos button { padding: 20% 10% 8%; }
+.pv-gaveta.muitos em { top: 5px; font-size: 8px; }
 .pv-gaveta button { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; padding: 18% 14% 12%; border: 0; touch-action: manipulation; background: var(--papel); cursor: grab;
   transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
 .pv-gaveta button:hover { box-shadow: 0 0 0 1px var(--destaque), 0 14px 30px -16px rgba(0, 0, 0, .8); transform: translateY(-2px); }

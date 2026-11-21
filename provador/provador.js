@@ -521,6 +521,7 @@ function centroDaTela() {
   return h ? h.point : new THREE.Vector3(0, 1.2, 0);
 }
 function montaGaveta() {
+  gaveta.classList.toggle("muitos", FL.length > 9);   // mais de 9: 4 por linha no computador, sem o nome embaixo
   gaveta.innerHTML = FL.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
   $$("button", gaveta).forEach((b) => {
     const f = FL[+b.dataset.i];

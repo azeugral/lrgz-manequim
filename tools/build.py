@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "11"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "12"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -189,15 +189,16 @@ def main():
     for f in sorted(glob.glob("clientes/*.json")):
         c = json.load(open(f, encoding="utf8"))
         # raiz padrao: Maronez (piloto); sem ele, o primeiro cliente que nao e demo
-        if c["slug"] == "maronez" or not primeiro:
+        if (c["slug"] == "maronez" or not primeiro) and not c.get("soProvador"):
             primeiro = c if c.get("modo") != "demo" else primeiro
         for h in c.get("dominios", []):
             hosts[h] = c["slug"]
         os.makedirs(c["slug"], exist_ok=True)
         dados = json.dumps(c, ensure_ascii=False).replace("<", "\\u003c")
         inicio = f'window.MANEQUIM_BASE="../";window.MANEQUIM_CLIENTE={dados};'
-        with open(f"{c['slug']}/index.html", "w", encoding="utf8", newline="\n") as s:
-            s.write(pagina(c, "../", inicio))
+        if not c.get("soProvador"):   # soProvador: cliente que usa só o provador (sem a página de orçamento)
+            with open(f"{c['slug']}/index.html", "w", encoding="utf8", newline="\n") as s:
+                s.write(pagina(c, "../", inicio))
         if c.get("provador"):   # provador 3D dos disponíveis: /<slug>/provador/
             os.makedirs(f"{c['slug']}/provador", exist_ok=True)
             ini = f'window.MANEQUIM_BASE="../../";window.MANEQUIM_CLIENTE={dados};'

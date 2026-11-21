@@ -1,0 +1,82 @@
+[
+ {
+  "id": "01",
+  "nome": "Dragão terrível I",
+  "r": 1.2748
+ },
+ {
+  "id": "02",
+  "nome": "Dragão terrível II",
+  "r": 0.7
+ },
+ {
+  "id": "03",
+  "nome": "Ornamento espelhado",
+  "r": 1.4634
+ },
+ {
+  "id": "09",
+  "nome": "Peixasso",
+  "r": 0.5689
+ },
+ {
+  "id": "12",
+  "nome": "Peixe",
+  "r": 0.6389
+ },
+ {
+  "id": "13",
+  "nome": "Peixe tropical",
+  "r": 0.5756
+ },
+ {
+  "id": "14",
+  "nome": "Dragão terrível e feio",
+  "r": 0.8056
+ },
+ {
+  "id": "17",
+  "nome": "Diva predadora absoluta",
+  "r": 1.3333
+ },
+ {
+  "id": "19",
+  "nome": "Sapo",
+  "r": 0.7644
+ },
+ {
+  "id": "21",
+  "nome": "Te amo sapos",
+  "r": 0.7157
+ },
+ {
+  "id": "24",
+  "nome": "Nepenthes",
+  "r": 1.1765
+ },
+ {
+  "id": "26",
+  "nome": "Tubarões",
+  "r": 0.9677
+ },
+ {
+  "id": "25",
+  "nome": "Cão",
+  "r": 1.1566
+ },
+ {
+  "id": "29",
+  "nome": "Bestiário de Merian III",
+  "r": 0.5729
+ },
+ {
+  "id": "30",
+  "nome": "Bestiário de Merian IV",
+  "r": 0.6529
+ },
+ {
+  "id": "31",
+  "nome": "Ânfora, cobra e yin-yang",
+  "r": 1.6698
+ }
+]
