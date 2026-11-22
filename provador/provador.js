@@ -457,6 +457,7 @@ async function poe(f, p) {
   pecas.push(q);
   desenha(q); escolhe(pecas.length - 1); atualizaLista();
   palco.classList.remove("vazio");
+  if (mq.matches) olhaPara(q);   // celular: o corpo inteiro fica pequeno; a câmera chega perto da peça nova
 }
 function tira(i) {
   const q = pecas[i]; if (!q) return;
@@ -822,7 +823,26 @@ function ativa() {
   if (ativo) return;
   ativo = true; palco.classList.add("ativo"); pedeQuadro();
 }
-$("#pv-comecar").addEventListener("click", ativa);
+$("#pv-comecar").addEventListener("click", () => {
+  ativa();
+  // celular: o palco encaixa na tela (corpo + bandeja de disponíveis), como um app
+  if (mq.matches && !VITRINE) scrollTo({ top: palco.getBoundingClientRect().top + scrollY - 8, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+});
+
+/* ---------- celular: "Pedir orçamento" fixo embaixo enquanto a montagem está fora da tela ---------- */
+if (!VITRINE) {
+  const fixo = document.createElement("div");
+  fixo.className = "pv-fixo"; fixo.hidden = true;
+  fixo.innerHTML = `<button type="button" class="pv-btn"><svg><use href="#zap"/></svg><span>Pedir orçamento</span><b></b></button>`;
+  document.body.append(fixo);
+  const mont = $(".pv-mont"), conta = $("b", fixo);
+  let montVisivel = false;
+  const mostra = () => { fixo.hidden = !(mq.matches && ativo && pecas.length && !montVisivel); $("span", fixo).textContent = $("span", bPede).textContent; conta.textContent = pecas.length > 1 ? `${pecas.length} desenhos` : ""; };
+  new IntersectionObserver(([e]) => { montVisivel = e.isIntersecting; mostra(); }).observe(mont);
+  $("button", fixo).addEventListener("click", () => bPede.click());
+  new MutationObserver(mostra).observe(lista, { childList: true });
+  mq.addEventListener("change", mostra);
+}
 
 trocaCorpo("feminino", true).catch((e) => { console.error(e); semTresD(); });
 carregaCorpo("masculino");   // já deixa o outro pronto
