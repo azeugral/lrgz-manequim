@@ -9,6 +9,8 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -50,22 +52,33 @@ def main(slug):
     out = f"clientes/{slug}/provador"
     os.makedirs(out, exist_ok=True)
     lista = []
-    for f in c["provador"]["flashes"]:
+    pv = c["provador"]
+    lado = int(pv.get("resolucao", 900))       # lado maior da tinta (folha com muito detalhe: 1200)
+    for f in pv["flashes"]:
         src = Image.open(f["img"]).convert("RGB")
         col = bool(f.get("colorido"))
         M = 60   # margem de papel em volta, para a folga do recorte nunca passar da borda
-        al = np.pad(tira_marca(alfa(src, col)), M)
-        rgb = np.pad(np.asarray(src), ((M, M), (M, M), (0, 0)), constant_values=255)
+        escura = f.get("fundo", pv.get("fundo")) == "escuro"
+        if escura:   # arte sobre fundo escuro (ex.: Samtto): ver tools/folha_escura.py
+            from folha_escura import folha_escura
+            cor0, al0 = folha_escura(src)
+            al = np.pad(al0, M)
+            rgb = np.pad(cor0, ((M, M), (M, M), (0, 0)), constant_values=255)
+        else:
+            al = np.pad(tira_marca(alfa(src, col)), M)
+            rgb = np.pad(np.asarray(src), ((M, M), (M, M), (0, 0)), constant_values=255)
         y0, y1, x0, x1 = recorta(al)
         al, rgb = al[y0:y1, x0:x1], rgb[y0:y1, x0:x1]
-        if col:
+        if escura:
+            cor = rgb if col else np.zeros_like(rgb)
+        elif col:
             # cor sem o branco do papel misturado na borda (desfaz a mistura com o branco)
             a3 = np.clip(al, .2, 1)[..., None]
             cor = np.clip((rgb.astype(np.float32) - 255 * (1 - a3)) / a3, 0, 255).astype(np.uint8)
         else:
             cor = np.zeros_like(rgb)
         im = Image.fromarray(np.dstack([cor, (al * 255).astype(np.uint8)]), "RGBA")
-        im.thumbnail((900, 900), Image.LANCZOS)
+        im.thumbnail((lado, lado), Image.LANCZOS)
         im.save(f"{out}/{f['id']}.webp", quality=90, method=6)
         pq = im.copy(); pq.thumbnail((240, 240), Image.LANCZOS)
         pq.save(f"{out}/{f['id']}-p.webp", quality=86, method=6)

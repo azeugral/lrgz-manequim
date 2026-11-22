@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Provador | Samtto</title>
+<meta name="description" content="Escolha um disponível, ponha na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0808">
+<meta property="og:title" content="Provador | Samtto">
+<meta property="og:description" content="Escolha um disponível, ponha na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://samtto.com.br/assets/img/og-samtto-desktop.jpg">
+<link rel="icon" href="../../clientes/samtto/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500&amp;family=Rubik+Dirt&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<link rel="preload" as="fetch" href="../../assets/3d/feminino.glb?v=1" crossorigin>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js">
+<link rel="stylesheet" href="../../app.css?v=20">
+<link rel="stylesheet" href="../../provador/provador.css?v=14">
+<style>body{background:#0a0808}</style>
+</head>
+<body class="pv-pagina">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="zap" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0a11.9 11.9 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0Zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.9 9.9 0 1 1 12 21.8Zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5l-.7-.3Z"/></symbol>
+<symbol id="espelha" viewBox="0 0 24 24"><path d="M12 3v18M9 7 3 17h6zm6 0 6 10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+<symbol id="lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="gira" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.6" r="1.9"/><path d="M12 8.2v6.6"/><path d="M7.2 10.4C4.2 11 2.5 12 2.5 13.2c0 2 4.3 3.6 9.5 3.6s9.5-1.6 9.5-3.6c0-1.2-1.7-2.2-4.7-2.8"/><path d="m15.4 8.6 1.6 1.8-2 1.3"/></g></symbol>
+<symbol id="roda" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.1-5M17 3v4h-4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="certo" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
+</svg>
+<header class="topo"><a id="insta" target="_blank" rel="noopener" hidden></a><div class="marca"><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
+<main id="provador">
+<div class="cab"><h1 id="t-titulo"></h1><p class="lead" id="t-sub"></p></div>
+<div class="pv-app">
+<div class="pv-centro">
+<section class="pv-palco" id="palco" aria-label="Corpo 3D para provar os desenhos">
+<div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
+<p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
+<div class="pv-capa" id="capa"><button type="button" class="pv-btn" id="pv-comecar"><svg><use href="#gira"/></svg><span>Começar</span></button><p>Gire o corpo e prove os desenhos na pele</p></div>
+<div class="pv-ferr" id="ferr" role="toolbar" aria-label="Ajustar o desenho escolhido"><button type="button" data-f="menor" aria-label="Diminuir"><svg><use href="#menos"/></svg><span>Menor</span></button><button type="button" data-f="maior" aria-label="Aumentar"><svg><use href="#mais"/></svg><span>Maior</span></button><button type="button" data-f="gira" aria-label="Girar 15 graus"><svg><use href="#roda"/></svg><span>Girar</span></button><button type="button" data-f="espelha" aria-label="Espelhar"><svg><use href="#espelha"/></svg><span>Espelhar</span></button><button type="button" data-f="tira" aria-label="Tirar do corpo"><svg><use href="#lixo"/></svg><span>Tirar</span></button><button type="button" data-f="ok" aria-label="Pronto"><svg><use href="#certo"/></svg><span>Pronto</span></button></div>
+<div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
+</section>
+<div class="pv-trilho" id="trilho" aria-label="Disponíveis"></div>
+<div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
+</div>
+<aside class="pv-col pv-esq">
+<h2 class="pv-tit"><b></b>Disponíveis</h2>
+<ul class="pv-gaveta" id="gaveta"></ul>
+<div class="pv-pontos" id="pontos" aria-hidden="true"></div>
+<p class="pv-sob">Arraste até o corpo ou toque para aplicar.</p>
+</aside>
+<aside class="pv-col pv-dir">
+<div class="pv-ajuste" id="ajuste" aria-disabled="true">
+<h2 class="pv-tit"><b></b>Ajuste</h2>
+<p class="pv-aj-nome" id="aj-nome">Escolha uma peça no corpo</p>
+<div class="pv-cores" id="pv-cores" role="group" aria-label="Cor da tinta"></div>
+<label class="pv-faixa"><span>Tamanho <output id="o-tam">12 cm</output></span><input type="range" id="r-tam" min="4" max="45" step="1" value="12"></label>
+<label class="pv-faixa"><span>Giro <output id="o-giro">0°</output></span><input type="range" id="r-giro" min="-180" max="180" step="1" value="0"></label>
+<div class="pv-acoes"><button type="button" class="pv-mini" id="b-espelha"><svg><use href="#espelha"/></svg>Espelhar</button><button type="button" class="pv-mini" id="b-apaga"><svg><use href="#lixo"/></svg>Tirar</button></div>
+</div>
+<div class="pv-mont">
+<h2 class="pv-tit"><b></b>Sua montagem</h2>
+<ul class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ul>
+<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
+<p class="pv-nota">Tamanho estimado para um corpo de 1,70&nbsp;m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
+</div>
+</aside>
+</div>
+<section class="pv-recebe" id="recebe" hidden></section>
+</main>
+<div class="pv-aviso" id="aviso" role="status" hidden></div>
+<footer class="rod">Provador por <a href="https://lrgz.com.br">L R G Z</a></footer>
+<script>window.MANEQUIM_BASE="../../";window.MANEQUIM_CLIENTE={"slug": "samtto", "nome": "Samtto", "titulo": "Orçamento | Samtto", "site": "https://samtto.com.br", "siteRotulo": "samtto.com.br", "dominios": ["orcamento.samtto.com.br"], "modo": "whatsapp", "whatsapp": "5592994075239", "instagram": "https://www.instagram.com/ssamtto/", "agenda": {"api": "https://lrgz-agenda.azeugral.workers.dev/v1/samtto", "turnstile": "0x4AAAAAAF1Ls_tYFmLOZhD7", "horario": "08:00-18:00", "dias": [1, 2, 3, 4, 5, 6]}, "logo": "clientes/samtto/logo.webp", "favicon": "clientes/samtto/favicon-32.png", "icone192": "clientes/samtto/icon-192.png", "css": "clientes/samtto/skin.css", "og": "https://samtto.com.br/assets/img/og-samtto-desktop.jpg", "fontes": "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500&family=Rubik+Dirt&family=IBM+Plex+Sans:wght@400;500;600&display=swap", "tema": {"fundo": "#0a0808", "texto": "#ece6da", "titulo": "#ece6da", "apoio": "#a9a296", "linha": "rgba(236,230,218,.16)", "palco": "#141010", "destaque": "#c80000", "sobre-destaque": "#fffaf0", "destaque-texto": "#ff2a1a", "zona": "rgba(200,0,0,.3)", "selecao": "rgba(200,0,0,.6)", "chanfro": "0px", "f-titulo": "\"Rubik Dirt\", Impact, system-ui, sans-serif", "f-texto": "\"IBM Plex Sans\", system-ui, sans-serif", "f-rotulo": "\"Pixelify Sans\", ui-monospace, monospace"}, "textos": {"titulo": "Monte sua tattoo", "sub": "Toca no corpo, escolhe o estilo e manda pro WhatsApp do Samtto. Menos de um minuto.", "ola": "Salve, Samtto!", "fecho": "Tem data livre nas próximas semanas? Se precisar, mando referência por aqui.", "ideia": "Ex.: hannya cyber com tribal vermelho, fechando o antebraço."}, "estilos": [{"nome": "Flash", "foto": "clientes/samtto/flash.jpg"}, {"nome": "Encomenda", "foto": "clientes/samtto/encomenda.jpg"}, {"nome": "Freehand", "foto": "clientes/samtto/freehand.jpg"}, {"nome": "Projeto grande", "foto": "clientes/samtto/projeto.jpg"}], "tamanhos": ["Pequena · até 10 cm", "Média · 10 a 20 cm", "Grande · mais de 20 cm", "Fechar região inteira"], "cores": [], "provador": {"titulo": "Prove no corpo", "sub": "Escolha um disponível, ponha na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.", "rotulo": "Disponíveis", "fundo": "escuro", "resolucao": 1200, "moldura": "#c80000", "flashes": [{"id": "m2000", "nome": "M2000", "img": "clientes/samtto/folhas/d29.webp", "colorido": true}, {"id": "snorlax-renegado", "nome": "SNORLAX RENEGADO", "img": "clientes/samtto/folhas/d30.webp", "colorido": true}, {"id": "ceifadores", "nome": "Ceifadores", "img": "clientes/samtto/folhas/d31.webp", "colorido": true}, {"id": "glep-agiota", "nome": "Glep agiota", "img": "clientes/samtto/folhas/d32.webp", "colorido": true}, {"id": "sequencia-bruta", "nome": "SEQUÊNCIA BRUTA", "img": "clientes/samtto/folhas/d26.webp", "colorido": true}, {"id": "berna", "nome": "BERNA", "img": "clientes/samtto/folhas/d27.webp", "colorido": true}, {"id": "so-odio", "nome": "SÓ-ÓDIO", "img": "clientes/samtto/folhas/d28.webp", "colorido": true}, {"id": "lobo-anarquista", "nome": "Lobo Anarquista", "img": "clientes/samtto/folhas/d23.webp", "colorido": true}, {"id": "caravejo", "nome": "CARAVEJO", "img": "clientes/samtto/folhas/d24.webp", "colorido": true}, {"id": "j-c", "nome": "J.C", "img": "clientes/samtto/folhas/d01.webp", "colorido": true}, {"id": "selo-de-odio", "nome": "Selo de ódio", "img": "clientes/samtto/folhas/d02.webp", "colorido": true}, {"id": "guaxinim-fulero", "nome": "Guaxinim fulero", "img": "clientes/samtto/folhas/d03.webp", "colorido": true}, {"id": "doberman", "nome": "Doberman", "img": "clientes/samtto/folhas/d05.webp", "colorido": true}, {"id": "carranca-aranha", "nome": "Carranca aranha", "img": "clientes/samtto/folhas/d06.webp", "colorido": true}, {"id": "punknight", "nome": "Punknight", "img": "clientes/samtto/folhas/d07.webp", "colorido": true}, {"id": "zumbi-skatista", "nome": "Zumbi skatista", "img": "clientes/samtto/folhas/d08.webp", "colorido": true}, {"id": "carberus-reprimido", "nome": "Carberus reprimido", "img": "clientes/samtto/folhas/d09.webp", "colorido": true}, {"id": "psyduck-10000", "nome": "Psyduck 10000$", "img": "clientes/samtto/folhas/d10.webp", "colorido": true}, {"id": "coelho-punk", "nome": "Coelho punk", "img": "clientes/samtto/folhas/d11.webp", "colorido": true}, {"id": "sua-hora-chega", "nome": "Sua hora chega", "img": "clientes/samtto/folhas/d12.webp", "colorido": true}, {"id": "carranca-felina", "nome": "Carranca felina", "img": "clientes/samtto/folhas/d13.webp", "colorido": true}, {"id": "totem-de-feras", "nome": "Totem de feras", "img": "clientes/samtto/folhas/d14.webp", "colorido": true}, {"id": "snorlax-punk", "nome": "Snorlax punk", "img": "clientes/samtto/folhas/d15.webp", "colorido": true}, {"id": "jason-anarquista", "nome": "Jason anarquista", "img": "clientes/samtto/folhas/d16.webp", "colorido": true}, {"id": "gueto", "nome": "Gueto", "img": "clientes/samtto/folhas/d17.webp", "colorido": true}, {"id": "punk-caida", "nome": "Punk caída", "img": "clientes/samtto/folhas/d18.webp", "colorido": true}, {"id": "garchomp-punk", "nome": "Garchomp punk", "img": "clientes/samtto/folhas/d19b.webp", "colorido": true}, {"id": "mangual", "nome": "Mangual", "img": "clientes/samtto/folhas/d20.webp", "colorido": true}, {"id": "ganancia-de-rua", "nome": "Ganância de rua", "img": "clientes/samtto/folhas/d21.webp", "colorido": true}, {"id": "pior-versao", "nome": "Pior versão", "img": "clientes/samtto/folhas/d22.webp", "colorido": true}]}};window.PV_V="14";</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module" src="../../provador/provador.js?v=14"></script>
+</body>
+</html>

@@ -255,3 +255,18 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-ferr button { height: 48px; }
 }
 .pv-trilho:empty { display: none; }
+
+/* ---------- celular como app: palco + bandeja ocupam a tela; pedir fica fixo embaixo ---------- */
+@media (max-width: 1080px) {
+  .pv-pagina:not(.vitrine *) .pv-palco { aspect-ratio: auto; height: clamp(430px, calc(100svh - 180px), 820px); max-height: none; }
+  .pv-fixo { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--fundo) 60%, transparent); display: grid; justify-items: center;
+    animation: pv-sobe .35s var(--ease) both; }
+  .pv-fixo[hidden] { display: none; }
+  .pv-fixo .pv-btn { width: min(440px, 100%); box-shadow: 0 16px 40px -16px rgba(0, 0, 0, .9); }
+  .pv-fixo b { margin-left: 4px; font-weight: 500; opacity: .7; }
+  .pv-fixo b:empty { display: none; }
+}
+@media (min-width: 1081px) { .pv-fixo { display: none; } }
+@keyframes pv-sobe { from { transform: translateY(100%); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pv-fixo { animation: none; } }
