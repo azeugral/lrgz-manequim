@@ -266,6 +266,7 @@
         "img": "clientes/samtto/folhas/d22.webp",
         "colorido": true
       }
-    ]
+    ],
+    "semTopo": true
   }
 }
