@@ -45,24 +45,11 @@
     <section class="page-head">
       <div class="wrap">
         <h1 class="display display--xl">Disponíveis</h1>
-        <p class="lead">Desenhos prontos pra tatuar. Escolhe um, prova no corpo 3D e pede pelo WhatsApp.</p>
+        <p class="lead">Desenhos prontos pra tatuar. Escolhe um e pede pelo WhatsApp.</p>
       </div>
     </section>
 
-    <section class="section disp-prov" id="provador" aria-labelledby="t-prov">
-      <div class="wrap">
-        <div class="section-head">
-          <p class="label">Provador 3D</p>
-          <h2 class="display display--l" id="t-prov">Prova no corpo</h2>
-          <p class="lead">Põe um disponível na pele, gira o corpo e vê de todos os lados. Gostou? Pede pelo WhatsApp.</p>
-        </div>
-        <div class="pv-janela">
-          <iframe id="pv-janela" title="Provador 3D dos disponíveis" allow="clipboard-write; web-share"></iframe>
-        </div>
-      </div>
-    </section>
-
-    <section class="section disp-todos" aria-label="Todos os disponíveis">
+    <section class="section" style="padding-top:0">
       <div class="wrap">
         <ul class="disp-grade" id="grade">
           <li class="disp" data-cat="tribal">
@@ -291,8 +278,7 @@
       <div class="disp-zoom__papel"><img src="" alt=""></div>
       <div class="disp-zoom__info">
         <div class="disp-zoom__acoes">
-          <a class="btn" href="#provador" data-z-provar>Provar no corpo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="btn btn--ghost" href="https://wa.me/555191248594" target="_blank" rel="noopener" data-z-pedir>Pedir no WhatsApp <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn" href="https://wa.me/555191248594" target="_blank" rel="noopener" data-z-pedir>Pedir esse desenho <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <div class="disp-zoom__nav">
             <button type="button" data-z-ant aria-label="Desenho anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
             <button type="button" data-z-prox aria-label="Próximo desenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
@@ -346,16 +332,13 @@
 
   <script src="js/main.js?v=20261124h" defer></script>
   <script>
-/* orcamento.maronez.com.br: disponíveis + provador 3D (LRGZ Manequim, ?vitrine=1).
-   "Provar no corpo" leva o desenho pro provador; "Pedir no WhatsApp" abre a conversa com o desenho na mensagem.
-   Gerado por tools/gera_disponiveis.py (site do Maronez). Não editar o raiz.html à mão. */
+/* Disponíveis: filtros e zoom com anterior/próximo; "Pedir esse desenho" abre o WhatsApp do Maronez com o desenho na mensagem.
+   (O provador 3D saiu do site por enquanto: volta quando a prova no corpo estiver 100%.) */
 (() => {
   const SITE = "https://maronez.com.br/";
-  // no ar o provador é /provador/ deste domínio; no teste local (repo do Manequim) é /maronez/provador/
-  const PROV = location.origin + (location.pathname.startsWith("/maronez/") ? "/maronez/provador/" : "/provador/") + "?vitrine=1";
-  const suave = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+  // mensagem pronta: número, nome e link da imagem (ele vê qual é sem procurar)
   const wa = (b) => {
-    const num = (window.MARONEZ && window.MARONEZ.whatsappNumber) || "555191248594";
+    const cfg = window.MARONEZ || {}, num = cfg.whatsappNumber || "555191248594";
     const msg = [
       "Fala Maronez! Curti um dos teus disponíveis:",
       `Nº ${b.dataset.n} · ${b.dataset.nome}`,
@@ -375,40 +358,11 @@
     itens.forEach((it) => it.classList.toggle("is-hidden", c !== "all" && it.dataset.cat !== c));
   }));
 
-  /* ---------- provador ---------- */
-  const f = document.getElementById("pv-janela");
-  let pronto = false;
-  if (f) {
-    f.addEventListener("load", () => { pronto = true; });
-    f.src = PROV;
-    const topoLivre = () => { const n = document.querySelector(".header"); return (n ? Math.max(0, n.getBoundingClientRect().bottom) : 0) + 14; };
-    addEventListener("message", (e) => {
-      if (e.source !== f.contentWindow || !e.data || !e.data.manequim) return;
-      const d = e.data;
-      if (d.altura) f.style.height = Math.max(480, Math.min(4000, d.altura)) + "px";
-      if (d.rolar) {
-        const base = f.getBoundingClientRect().top + scrollY, t = base + d.rolar.t, b = base + d.rolar.b;
-        const cima = scrollY + topoLivre(), baixo = scrollY + innerHeight - 16;
-        let y = null;
-        if (d.rolar.modo === "fim") { if (b > baixo) y = b - innerHeight + 24; }
-        else if (t < cima || b > baixo) y = t - topoLivre();
-        if (y !== null) scrollTo({ top: Math.max(0, y), behavior: suave() });
-      }
-    });
-  }
-  function prova(id) {
-    if (!f) return;
-    const alvo = document.getElementById("provador").getBoundingClientRect().top + scrollY;
-    scrollTo({ top: Math.max(0, alvo), behavior: "instant" });
-    if (pronto) f.contentWindow.postMessage({ manequim: 1, provar: id }, "*");
-    else f.src = `${PROV}&d=${encodeURIComponent(id)}`;
-  }
-
   /* ---------- zoom ---------- */
   const z = document.querySelector(".disp-zoom");
   if (!z) return;
   const img = z.querySelector(".disp-zoom__papel img");
-  const zProvar = z.querySelector("[data-z-provar]"), zPedir = z.querySelector("[data-z-pedir]");
+  const zPedir = z.querySelector("[data-z-pedir]");
   const botoes = [...document.querySelectorAll(".disp__btn")];
   let atual = -1;
   const visiveis = () => botoes.filter((b) => !b.closest(".disp").classList.contains("is-hidden"));
@@ -421,6 +375,7 @@
   const passa = (k) => { const v = visiveis(), i = v.indexOf(botoes[atual]); if (v.length) abre(v[(i + k + v.length) % v.length]); };
   botoes.forEach((b) => {
     b.addEventListener("click", () => abre(b));
+    // pré-carrega a imagem grande quando o dedo/mouse chega no cartão
     b.addEventListener("pointerenter", () => { const i = new Image(); i.src = b.dataset.full; }, { once: true });
   });
   z.querySelector("[data-z-ant]").addEventListener("click", () => passa(-1));
@@ -428,13 +383,6 @@
   z.querySelector(".disp-zoom__fechar").addEventListener("click", () => z.close());
   z.addEventListener("click", (e) => { if (e.target === z) z.close(); });
   z.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") passa(-1); if (e.key === "ArrowRight") passa(1); });
-  // o <base> aponta pro site: o link "#provador" sairia daqui, então o clique é sempre tratado aqui
-  zProvar.addEventListener("click", (e) => {
-    e.preventDefault();
-    const id = botoes[atual].dataset.id;
-    z.addEventListener("close", () => setTimeout(() => prova(id), 0), { once: true });
-    z.close();
-  });
 })();
 
   </script>
