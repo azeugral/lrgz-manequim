@@ -81,6 +81,32 @@
         "img": "clientes/maronez/folhas/perfil-tribal.png"
       },
       {
+        "id": "corpo-inteiro",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-inteiro.png",
+        "partes": [
+          "corpo-cabeca",
+          "corpo-peito",
+          "corpo-braco",
+          "corpo-tronco",
+          "corpo-coxa",
+          "corpo-canela-e",
+          "corpo-canela-d"
+        ],
+        "zona": "Corpo inteiro"
+      },
+      {
+        "id": "pernas-tribais",
+        "nome": "Pernas tribais",
+        "img": "clientes/maronez/folhas/pernas-tribais.png",
+        "partes": [
+          "tribal-coxa",
+          "tribal-canela",
+          "tribal-perna-longa"
+        ],
+        "zona": "As duas pernas"
+      },
+      {
         "id": "tribal-quadril",
         "nome": "Tribal do quadril",
         "img": "clientes/maronez/folhas/tribal-quadril.png",
@@ -117,7 +143,7 @@
       },
       {
         "id": "tribal-coxa",
-        "nome": "Tribal da coxa",
+        "nome": "Pernas tribais",
         "img": "clientes/maronez/folhas/tribal-coxa.png",
         "trava": {
           "lado": "d",
@@ -130,11 +156,12 @@
             "d": "Coxa direita",
             "e": "Coxa esquerda"
           }
-        }
+        },
+        "oculto": true
       },
       {
         "id": "tribal-canela",
-        "nome": "Tribal da canela",
+        "nome": "Pernas tribais",
         "img": "clientes/maronez/folhas/tribal-canela.png",
         "trava": {
           "lado": "d",
@@ -147,11 +174,12 @@
             "d": "Canela direita",
             "e": "Canela esquerda"
           }
-        }
+        },
+        "oculto": true
       },
       {
         "id": "tribal-perna-longa",
-        "nome": "Tribal perna longa",
+        "nome": "Pernas tribais",
         "img": "clientes/maronez/folhas/tribal-perna-longa.png",
         "trava": {
           "lado": "e",
@@ -164,7 +192,8 @@
             "d": "Perna direita inteira",
             "e": "Perna esquerda inteira"
           }
-        }
+        },
+        "oculto": true
       },
       {
         "id": "tribal-costela",
@@ -367,8 +396,130 @@
         "id": "mapa",
         "nome": "Mapa",
         "img": "clientes/maronez/folhas/mapa.png"
+      },
+      {
+        "id": "corpo-cabeca",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-cabeca.png",
+        "oculto": true,
+        "trava": {
+          "lado": "c",
+          "ref": "queixo",
+          "d": 0.084,
+          "x": 0,
+          "dir": 0,
+          "cm": 19,
+          "zona": "Rosto"
+        }
+      },
+      {
+        "id": "corpo-peito",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-peito.png",
+        "oculto": true,
+        "trava": {
+          "lado": "e",
+          "ref": "axila",
+          "d": 0.02,
+          "x": 0.077,
+          "dir": 15,
+          "cm": 26,
+          "zona": {
+            "e": "Peito esquerdo",
+            "d": "Peito direito"
+          }
+        }
+      },
+      {
+        "id": "corpo-braco",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-braco.png",
+        "oculto": true,
+        "trava": {
+          "lado": "d",
+          "ref": "cotovelo",
+          "d": 0.04,
+          "braco": true,
+          "dir": 0,
+          "cm": 61,
+          "zona": {
+            "d": "Braço direito",
+            "e": "Braço esquerdo"
+          },
+          "dentro": 0.03
+        }
+      },
+      {
+        "id": "corpo-tronco",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-tronco.png",
+        "oculto": true,
+        "trava": {
+          "lado": "e",
+          "ref": "virilha",
+          "d": 0.09,
+          "x": 0.01,
+          "dir": 0,
+          "cm": 65,
+          "zona": "Tronco até a coxa"
+        }
+      },
+      {
+        "id": "corpo-coxa",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-coxa.png",
+        "oculto": true,
+        "trava": {
+          "lado": "d",
+          "ref": "virilha",
+          "d": -0.13,
+          "perna": true,
+          "dir": 10,
+          "cm": 26,
+          "zona": {
+            "d": "Coxa direita",
+            "e": "Coxa esquerda"
+          }
+        }
+      },
+      {
+        "id": "corpo-canela-e",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-canela-e.png",
+        "oculto": true,
+        "trava": {
+          "lado": "e",
+          "ref": "joelho",
+          "d": -0.19,
+          "perna": true,
+          "dir": 15,
+          "cm": 41,
+          "zona": {
+            "e": "Canela esquerda",
+            "d": "Canela direita"
+          }
+        }
+      },
+      {
+        "id": "corpo-canela-d",
+        "nome": "Corpo inteiro",
+        "img": "clientes/maronez/folhas/corpo-canela-d.png",
+        "oculto": true,
+        "trava": {
+          "lado": "d",
+          "ref": "joelho",
+          "d": -0.29,
+          "perna": true,
+          "dir": 0,
+          "cm": 23,
+          "zona": {
+            "d": "Canela direita",
+            "e": "Canela esquerda"
+          }
+        }
       }
     ],
-    "semMarca": true
+    "semMarca": true,
+    "semTopo": true
   }
 }

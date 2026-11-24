@@ -340,7 +340,7 @@ function texMoldura() {
 const molduraMat = new THREE.MeshBasicMaterial({ map: texMoldura(), color: new THREE.Color(PV.moldura || "#2f6bff"), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -6 });
 
 /* ---------- peças ---------- */
-let FL = [];
+let FL = [], VIS = [];   // VIS: o que aparece na gaveta (partes de conjunto ficam de fora)
 const pecas = []; let atual = -1, moldura = null;
 const dims = (q) => { const base = q.cm / 100; return q.r >= 1 ? { w: base / q.r, h: base } : { w: base, h: base * q.r }; };
 function orientacao(q) {
@@ -385,7 +385,10 @@ function decal(q, w, h, tex) {
   }
   const P = [], N = [], U = [], v3 = new THREE.Vector3(), l = new THREE.Vector3(), uv = [0, 0, 0, 0, 0, 0];
   const ex = tex ? tex.image.width : 1, ey = tex ? tex.image.height : 1, mx = tex ? PAD / ex : 0, my = tex ? PAD / ey : 0;
+  // desenho travado no braço: abaixo da axila, só a pele do braço (o lado do tronco fica limpo)
+  const soBraco = q.trava && q.trava.braco, MB = MED[corpoAtual], sb = ALTURA / MB.H;
   for (const t of fila) {
+    if (soBraco) { const cy = cen[t * 3 + 1] / sb, cx = Math.abs(cen[t * 3] / sb); if (cy < MB.axila && cx < interp(MB.braco, cy)) continue; }
     let umin = 9, umax = -9, vmin = 9, vmax = -9;
     for (let k = 0; k < 3; k++) {
       v3.fromBufferAttribute(pos, idx[t * 3 + k]); local(v3, q, E, l);
@@ -438,16 +441,17 @@ function mostraSel() {
   rGiro.value = Math.round(q.giro); oGiro.textContent = `${Math.round(q.giro)}°`;
   $$("#pv-cores button").forEach((b) => { b.setAttribute("aria-pressed", b.dataset.cor === q.cor); if (b.dataset.cor === "original") b.hidden = !q.colorido; });
   localEl.hidden = false; dica.hidden = true;
-  localEl.innerHTML = `<b>${esc(q.nome)}</b> · ${q.zona}${q.trava ? " (local fixo)" : ""} · ~${q.cm} cm${q.trava ? "" : ` · ${Math.round(q.giro)}°`}${TOQUE ? "<small>Pinça muda o tamanho · gire os dois dedos para girar</small>" : ""}`;
+  localEl.innerHTML = `<b>${esc(q.nome)}</b> · ${nomeZona(q)}${q.trava ? " (local fixo)" : ""}${q.grupo ? "" : ` · ~${q.cm} cm`}${q.trava ? "" : ` · ${Math.round(q.giro)}°`}${TOQUE ? "<small>Pinça muda o tamanho · gire os dois dedos para girar</small>" : ""}`;
 }
 function escolhe(i) {
   atual = i; mostraSel();
   palco.classList.toggle("sel", i >= 0);
-  $$("li", lista).forEach((li) => li.classList.toggle("ativo", +li.dataset.i === i));
+  const s = pecas[i];
+  $$("li", lista).forEach((li) => { const q = pecas[+li.dataset.i]; li.classList.toggle("ativo", !!s && !!q && (q === s || (!!q.grupo && q.grupo === s.grupo))); });
 }
 /* ---------- desenho com local certo (trava no JSON do cliente): o tatuador só faz aquela peça naquele lugar ----------
    trava: { lado: "d" | "e" | "c", ref: medida do corpo (MED), d: deslocamento na altura, x: afastamento do meio,
-            perna: true acha o meio da perna naquela altura, dir: 0 frente / 90 lateral de fora, cm, giro } */
+            perna: true acha o meio da perna naquela altura, braco: true o meio do braço, dentro: puxa para o meio do corpo, dir: 0 frente / 90 lateral de fora, cm, giro } */
 function pontoTravado(t, ladoQ) {
   const M = MED[corpoAtual], s = ALTURA / M.H, y = (M[t.ref] + (t.d || 0)) * s;
   const sg = ladoQ === "e" ? 1 : ladoQ === "d" ? -1 : 0;
@@ -460,6 +464,15 @@ function pontoTravado(t, ladoQ) {
     }
     if (xs.length) x = (Math.min(...xs) + Math.max(...xs)) / 2;
   }
+  if (t.braco && sg) {   // de frente, o último trecho com pele daquele lado é o braço (o tronco vem antes)
+    let run = [], ant = -1;
+    for (let k = .02; k < .5; k += .003) {
+      raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
+      if (raio.intersectObject(malha, false).length) { if (k - ant > .008) run = []; run.push(k); ant = k; }
+    }
+    if (run.length) x = sg * (run[0] + run[run.length - 1]) / 2;
+  }
+  if (t.dentro && sg) x -= sg * t.dentro * s;   // desenho que sobe do membro para o ombro: o centro fica mais para dentro
   const a = (t.dir || 0) * Math.PI / 180, fora = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a));
   raio.set(new THREE.Vector3(x, y, 0).addScaledVector(fora, 2), fora.clone().negate());
   const h = raio.intersectObject(malha, false)[0];
@@ -471,8 +484,26 @@ function colocaTravada(q) {
 }
 const tamanho = (q, v) => q.trava ? THREE.MathUtils.clamp(Math.round(v), Math.round(q.cm0 * .8), Math.round(q.cm0 * 1.2)) : THREE.MathUtils.clamp(Math.round(v), 4, 45);
 const avisoTrava = () => avisa("Esse desenho tem local certo no corpo. Dá pra mudar o tamanho e passar pro outro lado.");
-async function poe(f, p) {
+// conjunto: uma arte só, feita de partes travadas em lugares diferentes (ex.: corpo inteiro). Entra, sai, espelha e cresce junto.
+const membros = (q) => (q && q.grupo ? pecas.filter((x) => x.grupo === q.grupo) : q ? [q] : []);
+const unicas = () => pecas.filter((q) => !q.grupo || membros(q)[0] === q);
+const nomeZona = (q) => (q.grupo ? q.grupo.zona || q.zona : q.zona);
+async function poeConjunto(f) {
+  const g = { id: f.id, nome: f.nome, zona: f.zona };
+  let primeiro = null;
+  for (const id of f.partes) {
+    const pf = FL.find((x) => x.id === id); if (!pf) continue;
+    const q = await poe(pf, centroDaTela(), g);
+    if (q && !primeiro) primeiro = q;
+  }
+  if (!primeiro) return;
+  escolhe(pecas.indexOf(primeiro)); atualizaLista();
+  palco.classList.remove("vazio");
+  mostraVista("f");   // a arte ocupa o corpo: a câmera mostra ele inteiro
+}
+async function poe(f, p, grupo) {
   if (!malha) return;
+  if (f.partes && !grupo) return poeConjunto(f);
   const t = await textura(f.id);
   const tex = new THREE.CanvasTexture(t.canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   let texCor = null;
@@ -482,16 +513,22 @@ async function poe(f, p) {
   const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const q = { id: f.id, nome: f.nome, r: f.r, colorido: !!f.colorido, cm: 12, giro: 0, flip: false, cor: cor0, p: p.clone(), n: null, tex, texCor, mat };
   q.n = normalEm(q.p, .05);
+  if (grupo) { q.grupo = grupo; q.nome = grupo.nome; }
   if (f.trava) { q.trava = f.trava; q.lado = f.trava.lado || "c"; q.cm = q.cm0 = f.trava.cm; q.giro = f.trava.giro || 0; if (!colocaTravada(q)) return; }
   pecas.push(q);
-  desenha(q); escolhe(pecas.length - 1); atualizaLista();
+  desenha(q);
+  if (grupo) return q;
+  escolhe(pecas.length - 1); atualizaLista();
   palco.classList.remove("vazio");
   if (mq.matches) olhaPara(q);   // celular: o corpo inteiro fica pequeno; a câmera chega perto da peça nova
 }
 function tira(i) {
-  const q = pecas[i]; if (!q) return;
-  cena.remove(q.malha); q.malha.geometry.dispose(); q.mat.dispose(); q.tex.dispose(); if (q.texCor) q.texCor.dispose();
-  pecas.splice(i, 1);
+  const q0 = pecas[i]; if (!q0) return;
+  for (const q of membros(q0)) {
+    cena.remove(q.malha); q.malha.geometry.dispose(); q.mat.dispose(); q.tex.dispose(); if (q.texCor) q.texCor.dispose();
+    pecas.splice(pecas.indexOf(q), 1);
+  }
+  i = Math.min(i, pecas.length - 1);
   escolhe(Math.min(i, pecas.length - 1)); atualizaLista();
   if (!pecas.length) { palco.classList.add("vazio"); dica.hidden = false; }
   pedeQuadro();
@@ -500,8 +537,10 @@ function atualizaLista() {
   bPede.disabled = bSalva.disabled = !pecas.length;
   if (!pecas.length) { lista.innerHTML = '<li class="pv-vazio">Nenhum desenho no corpo ainda.</li>'; return; }
   // cartões iguais, centrados: miniatura no papel, nome, local e tamanho
-  lista.innerHTML = pecas.map((q, i) => `<li data-i="${i}" class="${i === atual ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${q.id}-p.webp" alt="">` : `<i style="--m:url(${DIR}${q.id}-p.webp);background:${q.cor === "base" ? TINTA : CORES[q.cor]}"></i>`}</b>
-    <span>${esc(q.nome)}</span><small>${q.zona}</small><small>~${q.cm} cm</small></li>`).join("");
+  const sel = pecas[atual];
+  lista.innerHTML = unicas().map((q) => { const i = pecas.indexOf(q), ic = q.grupo ? q.grupo.id : q.id, on = sel && (sel === q || (q.grupo && sel.grupo === q.grupo));
+    return `<li data-i="${i}" class="${on ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${ic}-p.webp" alt="">` : `<i style="--m:url(${DIR}${ic}-p.webp);background:${q.cor === "base" ? TINTA : CORES[q.cor]}"></i>`}</b>
+    <span>${esc(q.nome)}</span><small>${nomeZona(q)}</small><small>${q.grupo ? "Arte completa" : `~${q.cm} cm`}</small></li>`; }).join("");
 }
 lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (!li) return; escolhe(+li.dataset.i); olhaPara(pecas[atual]); });
 lista.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.closest("li[data-i]")) e.target.click(); });
@@ -515,15 +554,26 @@ function olhaPara(q) {
 
 /* ---------- painel ---------- */
 let agendado = null;
-const redesenha = (q) => { if (agendado) return; agendado = requestAnimationFrame(() => { agendado = null; desenha(q); }); };
-rTam.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; q.cm = tamanho(q, +rTam.value); if (q.cm !== +rTam.value) rTam.value = q.cm; redesenha(q); });
+const pend = new Set();
+const redesenha = (q) => { membros(q).forEach((m) => pend.add(m)); if (agendado) return; agendado = requestAnimationFrame(() => { agendado = null; const l = [...pend]; pend.clear(); l.forEach(desenha); }); };
+// tamanho: no conjunto, todas as partes crescem na mesma proporção (cada uma dentro do seu limite)
+function mudaTam(q, v) {
+  const novo = tamanho(q, v);
+  if (q.grupo) { const k = novo / q.cm; for (const m of membros(q)) if (m !== q) m.cm = tamanho(m, m.cm * k); }
+  q.cm = novo;
+}
+rTam.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; mudaTam(q, +rTam.value); if (q.cm !== +rTam.value) rTam.value = q.cm; redesenha(q); });
 rTam.addEventListener("change", atualizaLista);
 rGiro.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; if (q.trava) { rGiro.value = Math.round(q.giro); return avisoTrava(); } q.giro = +rGiro.value; redesenha(q); });
-$$("#pv-cores button").forEach((b) => b.addEventListener("click", () => { const q = pecas[atual]; if (!q) return; q.cor = b.dataset.cor; desenha(q); atualizaLista(); }));
-function espelha(q) {
-  q.flip = !q.flip;
-  if (q.trava && q.lado !== "c") { q.lado = q.lado === "d" ? "e" : "d"; q.giro = -q.giro; colocaTravada(q); olhaPara(q); }
-  desenha(q); atualizaLista();
+$$("#pv-cores button").forEach((b) => b.addEventListener("click", () => { const q = pecas[atual]; if (!q) return; for (const m of membros(q)) { m.cor = b.dataset.cor; desenha(m); } atualizaLista(); }));
+function espelha(q0) {
+  for (const q of membros(q0)) {
+    q.flip = !q.flip;
+    if (q.trava && q.lado !== "c") { q.lado = q.lado === "d" ? "e" : "d"; q.giro = -q.giro; colocaTravada(q); }
+    desenha(q);
+  }
+  if (q0.trava && !q0.grupo && q0.lado !== "c") olhaPara(q0);
+  atualizaLista();
 }
 $("#b-espelha").addEventListener("click", () => { const q = pecas[atual]; if (q) espelha(q); });
 $("#b-apaga").addEventListener("click", () => tira(atual));
@@ -558,10 +608,10 @@ function centroDaTela() {
   return h ? h.point : new THREE.Vector3(0, 1.2, 0);
 }
 function montaGaveta() {
-  gaveta.classList.toggle("muitos", FL.length > 9);   // mais de 9: 4 por linha no computador, sem o nome embaixo
-  gaveta.innerHTML = FL.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
+  gaveta.classList.toggle("muitos", VIS.length > 9);   // mais de 9: 4 por linha no computador, sem o nome embaixo
+  gaveta.innerHTML = VIS.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
   $$("button", gaveta).forEach((b) => {
-    const f = FL[+b.dataset.i];
+    const f = VIS[+b.dataset.i];
     let ini = null, fant = null;
     b.addEventListener("pointerdown", (e) => {
       if (e.button > 0) return;
@@ -604,7 +654,7 @@ function montaGaveta() {
     });
   });
   // celular: a grade vira uma faixa de 3 por vez; os pontos mostram a página
-  const pontos = $("#pontos"), pags = Math.max(1, Math.ceil(FL.length / 5));
+  const pontos = $("#pontos"), pags = Math.max(1, Math.ceil(VIS.length / 5));
   pontos.innerHTML = Array.from({ length: pags }, (_, k) => `<i data-k="${k}"></i>`).join("");
   const marca = () => { const max = gaveta.scrollWidth - gaveta.clientWidth, k = max > 0 ? Math.round(gaveta.scrollLeft / max * (pags - 1)) : 0; $$("i", pontos).forEach((p, n) => p.classList.toggle("ativo", n === k)); };
   gaveta.addEventListener("scroll", () => requestAnimationFrame(marca), { passive: true }); marca();
@@ -652,7 +702,7 @@ tela.addEventListener("pointermove", (e) => {
     e.stopImmediatePropagation();
     if (dedos.size < 2) return;
     const m = par(), q = gesto.q, G = gesto;
-    q.cm = tamanho(q, G.cm0 * m.d / G.d0);
+    mudaTam(q, G.cm0 * m.d / G.d0);
     if (q.trava) { redesenha(q); return; }
     // giro: soma o quanto os dedos giraram (sem pulo em ±180°); só começa depois de 6° para não girar sem querer no zoom
     let da = m.a - G.aAnt; da = Math.atan2(Math.sin(da), Math.cos(da)); G.aAnt = m.a;
@@ -699,20 +749,20 @@ tela.addEventListener("pointercancel", solta);
 $("#ferr").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-f]"), q = pecas[atual]; if (!b || !q) return;
   const f = b.dataset.f;
-  if (f === "menor") q.cm = tamanho(q, q.cm - 2);
-  else if (f === "maior") q.cm = tamanho(q, q.cm + 2);
+  if (f === "menor") mudaTam(q, q.cm - 2);
+  else if (f === "maior") mudaTam(q, q.cm + 2);
   else if (f === "gira") { if (q.trava) return avisoTrava(); q.giro = angulo(q.giro - 15); }   // sentido do relógio, como o ícone
   else if (f === "espelha") return espelha(q);
   else if (f === "tira") return tira(atual);
   else if (f === "ok") return escolhe(-1);
-  desenha(q); atualizaLista();
+  membros(q).forEach(desenha); atualizaLista();
 });
 tela.addEventListener("wheel", (e) => {
   const q = pecas[atual];
   if (q && acerta(tocaCorpo(e.clientX, e.clientY)) === atual) {   // em cima da peça escolhida: tamanho (Shift: giro)
     e.preventDefault(); e.stopImmediatePropagation();
     if (e.shiftKey) { if (!q.trava) q.giro = (((q.giro + (e.deltaY || e.deltaX) * .15) + 540) % 360) - 180; }
-    else q.cm = tamanho(q, q.cm * Math.exp(-e.deltaY * .0015) + (e.deltaY < 0 ? .5 : -.5));
+    else mudaTam(q, q.cm * Math.exp(-e.deltaY * .0015) + (e.deltaY < 0 ? .5 : -.5));
     redesenha(q); clearTimeout(tela.tl); tela.tl = setTimeout(atualizaLista, 250); return;
   }
   // corpo inteiro na tela e rodinha para baixo: deixa a página rolar
@@ -776,11 +826,11 @@ async function montagem() {
   o.fillStyle = "#f2efe8"; o.font = "600 20px 'JetBrains Mono', monospace"; o.textBaseline = "middle"; o.textAlign = "left";
   o.fillText(`${(DEMO ? "Seu Estúdio" : C.nome).toUpperCase()} · PROVADOR`, 28, H + rodape / 2);
   o.textAlign = "right"; o.fillStyle = "#8f8d88"; o.font = "500 16px 'JetBrains Mono', monospace";
-  o.fillText(pecas.map((q) => q.zona).filter((z, i, a) => a.indexOf(z) === i).join(" · ").slice(0, 70), W - 28, H + rodape / 2);
+  o.fillText(unicas().map(nomeZona).filter((z, i, a) => a.indexOf(z) === i).join(" · ").slice(0, 70), W - 28, H + rodape / 2);
   return new Promise((ok) => out.toBlob(ok, "image/png"));
 }
 function textoPedido() {
-  const l = pecas.map((q, i) => `${i + 1}. ${q.nome}\n   ${q.zona} · ~${q.cm} cm`);
+  const l = unicas().map((q, i) => `${i + 1}. ${q.nome}\n   ${nomeZona(q)}${q.grupo ? " (arte completa, local fixo)" : ` · ~${q.cm} cm`}`);
   const ola = DEMO ? "Olá, Seu Estúdio!" : (C.textos && C.textos.ola) || `Olá, ${C.nome}!`;
   return `${ola} Montei no provador do site e queria orçar:\n\n${l.join("\n")}\n\nA imagem da montagem vai junto.`;
 }
@@ -838,7 +888,7 @@ function pintaZonas(geo, nome) {
   window.__zonas = Object.keys(mapa);
   corpoAtual = ant;
 }
-window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(FL[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista };
+window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(VIS[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista };
 
 /* ---------- início ---------- */
 palco.classList.add("vazio");
@@ -853,7 +903,7 @@ function arrumaTrilho() {
 mq.addEventListener("change", arrumaTrilho); arrumaTrilho();
 ajustaTamanho();
 requestAnimationFrame(quadro);
-fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); if (Q.get("d")) prova(Q.get("d")); });
+fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; VIS = fl.filter((f) => !f.oculto); montaGaveta(); if (Q.get("d")) prova(Q.get("d")); });
 /* ---------- desenho pedido de fora: ?d=<id> ou postMessage({manequim:1, provar:<id>}) do site do cliente ---------- */
 async function prova(id) {
   const f = FL.find((x) => x.id === id); if (!f) return;
@@ -882,7 +932,7 @@ if (!VITRINE) {
   document.body.append(fixo);
   const mont = $(".pv-mont"), conta = $("b", fixo);
   let montVisivel = false;
-  const mostra = () => { fixo.hidden = !(mq.matches && ativo && pecas.length && !montVisivel); $("span", fixo).textContent = $("span", bPede).textContent; conta.textContent = pecas.length > 1 ? `${pecas.length} desenhos` : ""; };
+  const mostra = () => { fixo.hidden = !(mq.matches && ativo && pecas.length && !montVisivel); $("span", fixo).textContent = $("span", bPede).textContent; conta.textContent = unicas().length > 1 ? `${unicas().length} desenhos` : ""; };
   new IntersectionObserver(([e]) => { montVisivel = e.isIntersecting; mostra(); }).observe(mont);
   $("button", fixo).addEventListener("click", () => bPede.click());
   new MutationObserver(mostra).observe(lista, { childList: true });

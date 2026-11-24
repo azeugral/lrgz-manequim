@@ -17,6 +17,32 @@
   "r": 1.0252
  },
  {
+  "id": "corpo-inteiro",
+  "nome": "Corpo inteiro",
+  "r": 3.6913,
+  "partes": [
+   "corpo-cabeca",
+   "corpo-peito",
+   "corpo-braco",
+   "corpo-tronco",
+   "corpo-coxa",
+   "corpo-canela-e",
+   "corpo-canela-d"
+  ],
+  "zona": "Corpo inteiro"
+ },
+ {
+  "id": "pernas-tribais",
+  "nome": "Pernas tribais",
+  "r": 2.1195,
+  "partes": [
+   "tribal-coxa",
+   "tribal-canela",
+   "tribal-perna-longa"
+  ],
+  "zona": "As duas pernas"
+ },
+ {
   "id": "tribal-quadril",
   "nome": "Tribal do quadril",
   "r": 1.1892,
@@ -53,7 +79,7 @@
  },
  {
   "id": "tribal-coxa",
-  "nome": "Tribal da coxa",
+  "nome": "Pernas tribais",
   "r": 1.8836,
   "trava": {
    "lado": "d",
@@ -66,11 +92,12 @@
     "d": "Coxa direita",
     "e": "Coxa esquerda"
    }
-  }
+  },
+  "oculto": true
  },
  {
   "id": "tribal-canela",
-  "nome": "Tribal da canela",
+  "nome": "Pernas tribais",
   "r": 2.6128,
   "trava": {
    "lado": "d",
@@ -83,11 +110,12 @@
     "d": "Canela direita",
     "e": "Canela esquerda"
    }
-  }
+  },
+  "oculto": true
  },
  {
   "id": "tribal-perna-longa",
-  "nome": "Tribal perna longa",
+  "nome": "Pernas tribais",
   "r": 3.7671,
   "trava": {
    "lado": "e",
@@ -100,7 +128,8 @@
     "d": "Perna direita inteira",
     "e": "Perna esquerda inteira"
    }
-  }
+  },
+  "oculto": true
  },
  {
   "id": "tribal-costela",
@@ -303,5 +332,126 @@
   "id": "mapa",
   "nome": "Mapa",
   "r": 0.95
+ },
+ {
+  "id": "corpo-cabeca",
+  "nome": "Corpo inteiro",
+  "r": 1.1506,
+  "trava": {
+   "lado": "c",
+   "ref": "queixo",
+   "d": 0.084,
+   "x": 0,
+   "dir": 0,
+   "cm": 19,
+   "zona": "Rosto"
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-peito",
+  "nome": "Corpo inteiro",
+  "r": 0.7791,
+  "trava": {
+   "lado": "e",
+   "ref": "axila",
+   "d": 0.02,
+   "x": 0.077,
+   "dir": 15,
+   "cm": 26,
+   "zona": {
+    "e": "Peito esquerdo",
+    "d": "Peito direito"
+   }
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-braco",
+  "nome": "Corpo inteiro",
+  "r": 3.3537,
+  "trava": {
+   "lado": "d",
+   "ref": "cotovelo",
+   "d": 0.04,
+   "braco": true,
+   "dir": 0,
+   "cm": 61,
+   "zona": {
+    "d": "Braço direito",
+    "e": "Braço esquerdo"
+   },
+   "dentro": 0.03
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-tronco",
+  "nome": "Corpo inteiro",
+  "r": 2.6066,
+  "trava": {
+   "lado": "e",
+   "ref": "virilha",
+   "d": 0.09,
+   "x": 0.01,
+   "dir": 0,
+   "cm": 65,
+   "zona": "Tronco até a coxa"
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-coxa",
+  "nome": "Corpo inteiro",
+  "r": 1.8998,
+  "trava": {
+   "lado": "d",
+   "ref": "virilha",
+   "d": -0.13,
+   "perna": true,
+   "dir": 10,
+   "cm": 26,
+   "zona": {
+    "d": "Coxa direita",
+    "e": "Coxa esquerda"
+   }
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-canela-e",
+  "nome": "Corpo inteiro",
+  "r": 2.4499,
+  "trava": {
+   "lado": "e",
+   "ref": "joelho",
+   "d": -0.19,
+   "perna": true,
+   "dir": 15,
+   "cm": 41,
+   "zona": {
+    "e": "Canela esquerda",
+    "d": "Canela direita"
+   }
+  },
+  "oculto": true
+ },
+ {
+  "id": "corpo-canela-d",
+  "nome": "Corpo inteiro",
+  "r": 5.5556,
+  "trava": {
+   "lado": "d",
+   "ref": "joelho",
+   "d": -0.29,
+   "perna": true,
+   "dir": 0,
+   "cm": 23,
+   "zona": {
+    "d": "Canela direita",
+    "e": "Canela esquerda"
+   }
+  },
+  "oculto": true
  }
 ]

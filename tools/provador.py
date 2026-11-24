@@ -88,6 +88,9 @@ def main(slug):
             item["colorido"] = True
         if f.get("trava"):   # desenho preso a um local do corpo (ver provador.js: prova/trava)
             item["trava"] = f["trava"]
+        for k in ("oculto", "partes", "zona"):   # conjunto: uma arte feita de várias partes travadas (oculto = só parte)
+            if f.get(k):
+                item[k] = f[k]
         lista.append(item)
         print(f["id"], im.size, "colorido" if col else "")
     json.dump(lista, open(f"{out}/flashes.json", "w", encoding="utf8"), ensure_ascii=False, indent=1)
