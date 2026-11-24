@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "22"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "28"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -197,8 +197,11 @@ def main():
         dados = json.dumps(c, ensure_ascii=False).replace("<", "\\u003c")
         inicio = f'window.MANEQUIM_BASE="../";window.MANEQUIM_CLIENTE={dados};'
         if not c.get("soProvador"):   # soProvador: cliente que usa só o provador (sem a página de orçamento)
+            # raiz: página própria do cliente no lugar do orçamento pelo corpo (Maronez: disponíveis + provador,
+            # gerada pelo tools/gera_disponiveis.py do site dele)
+            corpo = open(c["raiz"], encoding="utf8").read() if c.get("raiz") else pagina(c, "../", inicio)
             with open(f"{c['slug']}/index.html", "w", encoding="utf8", newline="\n") as s:
-                s.write(pagina(c, "../", inicio))
+                s.write(corpo)
         if c.get("provador"):   # provador 3D dos disponíveis: /<slug>/provador/
             os.makedirs(f"{c['slug']}/provador", exist_ok=True)
             ini = f'window.MANEQUIM_BASE="../../";window.MANEQUIM_CLIENTE={dados};'

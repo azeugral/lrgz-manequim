@@ -354,6 +354,8 @@ function orientacao(q) {
 // A peça "abraça" a pele: cada vértice perto do ponto ganha coordenadas no plano da peça, mas com a distância
 // real (corda) até o centro, não a projetada. Num braço fino a arte dá a volta em vez de ser cortada na lateral.
 let carimbo = 1;
+// projeção plana: a tinta some aos poucos onde a pele vira de lado (cos entre a pele e o ângulo do mockup)
+const CORTE_PLANO = .18, CHEIO_PLANO = .5;
 function eixos(q) {
   const r = orientacao(q);
   return { X: new THREE.Vector3(1, 0, 0).applyQuaternion(r), Y: new THREE.Vector3(0, 1, 0).applyQuaternion(r) };
@@ -361,7 +363,7 @@ function eixos(q) {
 function local(v, q, E, out) {
   const dx = v.x - q.p.x, dy = v.y - q.p.y, dz = v.z - q.p.z, n = q.n;
   const h = dx * n.x + dy * n.y + dz * n.z, tx = dx - h * n.x, ty = dy - h * n.y, tz = dz - h * n.z;
-  const lt = Math.hypot(tx, ty, tz), ld = Math.hypot(dx, dy, dz), k = lt > 1e-6 ? ld / lt : 1;
+  const lt = Math.hypot(tx, ty, tz), ld = Math.hypot(dx, dy, dz), k = q.plano ? 1 : lt > 1e-6 ? ld / lt : 1;
   out.x = (tx * E.X.x + ty * E.X.y + tz * E.X.z) * k; out.y = (tx * E.Y.x + ty * E.Y.y + tz * E.Y.z) * k; out.z = ld;
   return out;
 }
@@ -384,11 +386,17 @@ function decal(q, w, h, tex) {
       }
     }
   }
-  const P = [], N = [], U = [], v3 = new THREE.Vector3(), l = new THREE.Vector3(), uv = [0, 0, 0, 0, 0, 0];
+  const P = [], N = [], U = [], C = [], v3 = new THREE.Vector3(), l = new THREE.Vector3(), uv = [0, 0, 0, 0, 0, 0];
   const ex = tex ? tex.image.width : 1, ey = tex ? tex.image.height : 1, mx = tex ? PAD / ex : 0, my = tex ? PAD / ey : 0;
   // desenho travado no braço: abaixo da axila, só a pele do braço (o lado do tronco fica limpo)
   const soBraco = q.trava && q.trava.braco, MB = MED[corpoAtual], sb = ALTURA / MB.H;
+  const corte = q.plano ? CORTE_PLANO : -2, qn = q.n;
   for (const t of fila) {
+    if (corte > -1) {
+      let d = 0;
+      for (let k = 0; k < 3; k++) { const v = idx[t * 3 + k]; d += nor.getX(v) * qn.x + nor.getY(v) * qn.y + nor.getZ(v) * qn.z; }
+      if (d / 3 < corte) continue;
+    }
     if (soBraco) { const cy = cen[t * 3 + 1] / sb, cx = Math.abs(cen[t * 3] / sb); if (cy < MB.axila && cx < interp(MB.braco, cy)) continue; }
     let umin = 9, umax = -9, vmin = 9, vmax = -9;
     for (let k = 0; k < 3; k++) {
@@ -401,6 +409,8 @@ function decal(q, w, h, tex) {
     for (let k = 0; k < 3; k++) {
       const v = idx[t * 3 + k], nx = nor.getX(v), ny = nor.getY(v), nz = nor.getZ(v);
       P.push(pos.getX(v) + nx * .0006, pos.getY(v) + ny * .0006, pos.getZ(v) + nz * .0006); N.push(nx, ny, nz);
+      const al = corte > -1 ? THREE.MathUtils.smoothstep(nx * qn.x + ny * qn.y + nz * qn.z, CORTE_PLANO, CHEIO_PLANO) : 1;
+      C.push(1, 1, 1, al);
       U.push(mx + uv[k * 2] * (1 - 2 * mx), my + uv[k * 2 + 1] * (1 - 2 * my));
     }
   }
@@ -408,6 +418,7 @@ function decal(q, w, h, tex) {
   g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
   g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
   g.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(C, 4));
   return g;
 }
 function desenha(q) {
@@ -457,13 +468,14 @@ function pontoTravado(t, ladoQ) {
   const M = MED[corpoAtual], s = ALTURA / M.H, y = (M[t.ref] + (t.d || 0)) * s;
   const sg = ladoQ === "e" ? 1 : ladoQ === "d" ? -1 : 0;
   let x = sg * (t.x || 0) * s;
-  if (t.perna && sg) {   // varre de frente: o trecho com pele daquele lado é a perna
+  if (t.perna && sg) {   // varre de frente, de dentro pra fora: o primeiro trecho com pele é a perna (a mão ao lado da coxa fica de fora)
     const xs = [];
-    for (let k = .01; k < .32; k += .004) {
+    for (let k = .004; k < .32; k += .003) {
       raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
-      if (raio.intersectObject(malha, false).length) xs.push(sg * k);
+      if (raio.intersectObject(malha, false).length) xs.push(k);
+      else if (xs.length) break;
     }
-    if (xs.length) x = (Math.min(...xs) + Math.max(...xs)) / 2;
+    if (xs.length) x = sg * (xs[0] + xs[xs.length - 1]) / 2;
   }
   if (t.braco && sg) {   // de frente, o último trecho com pele daquele lado é o braço (o tronco vem antes)
     let run = [], ant = -1;
@@ -479,9 +491,12 @@ function pontoTravado(t, ladoQ) {
   const h = raio.intersectObject(malha, false)[0];
   return h ? h.point : null;
 }
+// desenho travado (veio de mockup): projetado reto, do ângulo em que o mockup foi visto (dir), sem "abraçar" o corpo.
+// Assim fica igual à foto e não escorrega para as costas nem estica nas laterais.
 function colocaTravada(q) {
   const p = pontoTravado(q.trava, q.lado); if (!p) return false;
-  q.p.copy(p); q.n = normalEm(p, Math.min(.06, q.cm / 100 / 3 + .015)); return true;
+  const t = q.trava, sg = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, a = (t.dir || 0) * Math.PI / 180;
+  q.p.copy(p); q.n = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a)).normalize(); q.plano = true; return true;
 }
 const tamanho = (q, v) => q.trava ? THREE.MathUtils.clamp(Math.round(v), Math.round(q.cm0 * .8), Math.round(q.cm0 * 1.2)) : THREE.MathUtils.clamp(Math.round(v), 4, 45);
 const avisoTrava = () => avisa("Esse desenho tem local certo no corpo. Dá pra mudar o tamanho e passar pro outro lado.");
@@ -511,7 +526,7 @@ async function poe(f, p, grupo) {
   if (f.colorido) { texCor = new THREE.CanvasTexture(t.cor); texCor.colorSpace = THREE.SRGBColorSpace; texCor.anisotropy = 8; }
   const cor0 = f.colorido ? "original" : "base";
   ativa();
-  const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
+  const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", vertexColors: true, transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const q = { id: f.id, nome: f.nome, r: f.r, colorido: !!f.colorido, cm: 12, giro: 0, flip: false, cor: cor0, p: p.clone(), n: null, tex, texCor, mat };
   q.n = normalEm(q.p, .05);
   if (grupo) { q.grupo = grupo; q.nome = grupo.nome; }

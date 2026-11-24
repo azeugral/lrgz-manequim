@@ -1,5 +1,6 @@
 {
   "slug": "maronez",
+  "raiz": "clientes/maronez/raiz.html",
   "nome": "Maronez",
   "titulo": "Orçamento | Maronez",
   "site": "https://maronez.com.br",
@@ -114,7 +115,7 @@
         "trava": {
           "lado": "d",
           "ref": "virilha",
-          "d": 0.19,
+          "d": 0.21,
           "x": 0.1,
           "dir": 15,
           "cm": 24,
@@ -129,12 +130,12 @@
         "nome": "Tribal da perna",
         "img": "clientes/maronez/folhas/tribal-perna.png",
         "trava": {
-          "lado": "d",
+          "lado": "e",
           "ref": "joelho",
-          "d": 0.06,
+          "d": -0.115,
           "perna": true,
-          "dir": 90,
-          "cm": 42,
+          "dir": 65,
+          "cm": 48,
           "zona": {
             "d": "Lateral da perna direita",
             "e": "Lateral da perna esquerda"
@@ -147,11 +148,11 @@
         "img": "clientes/maronez/folhas/tribal-coxa.png",
         "trava": {
           "lado": "d",
-          "ref": "virilha",
-          "d": -0.1,
+          "ref": "joelho",
+          "d": 0.162,
           "perna": true,
           "dir": 0,
-          "cm": 22,
+          "cm": 24,
           "zona": {
             "d": "Coxa direita",
             "e": "Coxa esquerda"
@@ -166,14 +167,15 @@
         "trava": {
           "lado": "d",
           "ref": "joelho",
-          "d": -0.2,
+          "d": -0.174,
           "perna": true,
           "dir": 0,
-          "cm": 26,
+          "cm": 51,
           "zona": {
             "d": "Canela direita",
             "e": "Canela esquerda"
-          }
+          },
+          "dentro": 0.026
         },
         "oculto": true
       },
@@ -184,14 +186,15 @@
         "trava": {
           "lado": "e",
           "ref": "joelho",
-          "d": 0.02,
+          "d": -0.05,
           "perna": true,
           "dir": 0,
-          "cm": 70,
+          "cm": 74,
           "zona": {
             "d": "Perna direita inteira",
             "e": "Perna esquerda inteira"
-          }
+          },
+          "dentro": 0.007
         },
         "oculto": true
       },
@@ -202,10 +205,10 @@
         "trava": {
           "lado": "d",
           "ref": "virilha",
-          "d": 0.17,
+          "d": 0.23,
           "x": 0.1,
-          "dir": 20,
-          "cm": 60,
+          "dir": 35,
+          "cm": 64,
           "zona": {
             "d": "Costela direita até o quadril",
             "e": "Costela esquerda até o quadril"
