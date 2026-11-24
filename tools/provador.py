@@ -65,7 +65,8 @@ def main(slug):
             al = np.pad(al0, M)
             rgb = np.pad(cor0, ((M, M), (M, M), (0, 0)), constant_values=255)
         else:
-            al = np.pad(tira_marca(alfa(src, col)), M)
+            al0 = alfa(src, col)
+            al = np.pad(al0 if pv.get("semMarca") else tira_marca(al0), M)
             rgb = np.pad(np.asarray(src), ((M, M), (M, M), (0, 0)), constant_values=255)
         y0, y1, x0, x1 = recorta(al)
         al, rgb = al[y0:y1, x0:x1], rgb[y0:y1, x0:x1]
@@ -85,6 +86,8 @@ def main(slug):
         item = {"id": f["id"], "nome": f["nome"], "r": round(im.height / im.width, 4)}
         if col:
             item["colorido"] = True
+        if f.get("trava"):   # desenho preso a um local do corpo (ver provador.js: prova/trava)
+            item["trava"] = f["trava"]
         lista.append(item)
         print(f["id"], im.size, "colorido" if col else "")
     json.dump(lista, open(f"{out}/flashes.json", "w", encoding="utf8"), ensure_ascii=False, indent=1)

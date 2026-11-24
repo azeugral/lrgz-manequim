@@ -1,0 +1,307 @@
+[
+ {
+  "id": "tribal-monstro",
+  "nome": "Tribal monstro",
+  "r": 1.7028,
+  "colorido": true
+ },
+ {
+  "id": "shh",
+  "nome": "Shh...",
+  "r": 0.8845,
+  "colorido": true
+ },
+ {
+  "id": "perfil-tribal",
+  "nome": "Perfil tribal",
+  "r": 1.0252
+ },
+ {
+  "id": "tribal-quadril",
+  "nome": "Tribal do quadril",
+  "r": 1.1892,
+  "colorido": true,
+  "trava": {
+   "lado": "d",
+   "ref": "virilha",
+   "d": 0.12,
+   "x": 0.1,
+   "dir": 15,
+   "cm": 24,
+   "zona": {
+    "d": "Quadril direito",
+    "e": "Quadril esquerdo"
+   }
+  }
+ },
+ {
+  "id": "tribal-perna",
+  "nome": "Tribal da perna",
+  "r": 2.1696,
+  "trava": {
+   "lado": "d",
+   "ref": "joelho",
+   "d": 0.06,
+   "perna": true,
+   "dir": 90,
+   "cm": 42,
+   "zona": {
+    "d": "Lateral da perna direita",
+    "e": "Lateral da perna esquerda"
+   }
+  }
+ },
+ {
+  "id": "tribal-coxa",
+  "nome": "Tribal da coxa",
+  "r": 1.8836,
+  "trava": {
+   "lado": "d",
+   "ref": "virilha",
+   "d": -0.1,
+   "perna": true,
+   "dir": 0,
+   "cm": 22,
+   "zona": {
+    "d": "Coxa direita",
+    "e": "Coxa esquerda"
+   }
+  }
+ },
+ {
+  "id": "tribal-canela",
+  "nome": "Tribal da canela",
+  "r": 2.6128,
+  "trava": {
+   "lado": "d",
+   "ref": "joelho",
+   "d": -0.2,
+   "perna": true,
+   "dir": 0,
+   "cm": 26,
+   "zona": {
+    "d": "Canela direita",
+    "e": "Canela esquerda"
+   }
+  }
+ },
+ {
+  "id": "tribal-perna-longa",
+  "nome": "Tribal perna longa",
+  "r": 3.7671,
+  "trava": {
+   "lado": "e",
+   "ref": "joelho",
+   "d": 0.02,
+   "perna": true,
+   "dir": 0,
+   "cm": 70,
+   "zona": {
+    "d": "Perna direita inteira",
+    "e": "Perna esquerda inteira"
+   }
+  }
+ },
+ {
+  "id": "tribal-costela",
+  "nome": "Tribal da costela",
+  "r": 2.0221,
+  "trava": {
+   "lado": "d",
+   "ref": "lombar",
+   "d": -0.03,
+   "x": 0.08,
+   "dir": 20,
+   "cm": 46,
+   "zona": {
+    "d": "Costela direita até o quadril",
+    "e": "Costela esquerda até o quadril"
+   }
+  }
+ },
+ {
+  "id": "peitoral-tribal",
+  "nome": "Peitoral tribal (par)",
+  "r": 0.6609,
+  "trava": {
+   "lado": "c",
+   "ref": "axila",
+   "d": 0.06,
+   "x": 0,
+   "dir": 0,
+   "cm": 34,
+   "zona": "Peito (os dois lados)"
+  }
+ },
+ {
+  "id": "dedo-do-meio",
+  "nome": "Dedo do meio",
+  "r": 1.4323,
+  "colorido": true
+ },
+ {
+  "id": "sorriso-de-serra",
+  "nome": "Sorriso de serra",
+  "r": 1.2115,
+  "colorido": true
+ },
+ {
+  "id": "mijando-na-bandeira",
+  "nome": "Mijando na bandeira",
+  "r": 1.4286,
+  "colorido": true
+ },
+ {
+  "id": "chapado",
+  "nome": "Chapado",
+  "r": 1.4031,
+  "colorido": true
+ },
+ {
+  "id": "capuz",
+  "nome": "Capuz",
+  "r": 1.8487
+ },
+ {
+  "id": "mad",
+  "nome": "MAD",
+  "r": 1.6369
+ },
+ {
+  "id": "pastelina",
+  "nome": "Pastelina",
+  "r": 1.2658,
+  "colorido": true
+ },
+ {
+  "id": "obrigado",
+  "nome": "Obrigado por mudar minha vida",
+  "r": 1.2443
+ },
+ {
+  "id": "please-be-patient",
+  "nome": "Please be patient",
+  "r": 0.3809,
+  "colorido": true
+ },
+ {
+  "id": "problem",
+  "nome": "Problem",
+  "r": 0.3727,
+  "colorido": true
+ },
+ {
+  "id": "i-love-beijar-djs",
+  "nome": "I ♥ beijar DJs",
+  "r": 0.6809,
+  "colorido": true
+ },
+ {
+  "id": "npc",
+  "nome": "NPC",
+  "r": 1.0784
+ },
+ {
+  "id": "fodase",
+  "nome": "Fodase",
+  "r": 0.1445,
+  "colorido": true
+ },
+ {
+  "id": "yo-dont-do-drugs",
+  "nome": "Yo dont do drugs",
+  "r": 1.07,
+  "colorido": true
+ },
+ {
+  "id": "gato-dj",
+  "nome": "Gato DJ",
+  "r": 1.1
+ },
+ {
+  "id": "capivara",
+  "nome": "Capivara armada",
+  "r": 1.4085
+ },
+ {
+  "id": "stella",
+  "nome": "Stella",
+  "r": 0.9155
+ },
+ {
+  "id": "gato-pensando",
+  "nome": "Gato pensando",
+  "r": 0.7391
+ },
+ {
+  "id": "penis",
+  "nome": "Penis™",
+  "r": 0.7836
+ },
+ {
+  "id": "made-in-japan",
+  "nome": "Made in Japan",
+  "r": 0.9682,
+  "colorido": true
+ },
+ {
+  "id": "polo-gang",
+  "nome": "Polo gang",
+  "r": 0.5882
+ },
+ {
+  "id": "gato-deitado",
+  "nome": "Gato deitado",
+  "r": 0.2227
+ },
+ {
+  "id": "soundcloud",
+  "nome": "SoundCloud",
+  "r": 1.4455
+ },
+ {
+  "id": "ps2",
+  "nome": "PS2",
+  "r": 1.2443
+ },
+ {
+  "id": "canivete",
+  "nome": "Canivete",
+  "r": 0.1591
+ },
+ {
+  "id": "leon",
+  "nome": "Leon",
+  "r": 2.3605
+ },
+ {
+  "id": "coringa",
+  "nome": "Coringa e porco",
+  "r": 1.4531
+ },
+ {
+  "id": "ponei",
+  "nome": "Pônei",
+  "r": 1.0816
+ },
+ {
+  "id": "calcinha-preta",
+  "nome": "Calcinha Preta",
+  "r": 0.9855
+ },
+ {
+  "id": "carrot-cobain",
+  "nome": "Carrot Cobain",
+  "r": 1.7886
+ },
+ {
+  "id": "better-call-saul",
+  "nome": "Better call Saul",
+  "r": 0.7009
+ },
+ {
+  "id": "mapa",
+  "nome": "Mapa",
+  "r": 0.95
+ }
+]

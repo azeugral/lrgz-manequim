@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Provador | Maronez</title>
+<meta name="description" content="Gire o corpo, ponha um disponível na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0a0a">
+<meta property="og:title" content="Provador | Maronez">
+<meta property="og:description" content="Gire o corpo, ponha um disponível na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://maronez.com.br/assets/img/og.jpg">
+<link rel="icon" href="../../clientes/maronez/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="preload" as="fetch" href="../../assets/3d/feminino.glb?v=1" crossorigin>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js">
+<link rel="stylesheet" href="../../app.css?v=20">
+<link rel="stylesheet" href="../../provador/provador.css?v=15">
+<style>body{background:#0b0a0a}</style>
+</head>
+<body class="pv-pagina">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="zap" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0a11.9 11.9 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0Zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.9 9.9 0 1 1 12 21.8Zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5l-.7-.3Z"/></symbol>
+<symbol id="espelha" viewBox="0 0 24 24"><path d="M12 3v18M9 7 3 17h6zm6 0 6 10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+<symbol id="lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="gira" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.6" r="1.9"/><path d="M12 8.2v6.6"/><path d="M7.2 10.4C4.2 11 2.5 12 2.5 13.2c0 2 4.3 3.6 9.5 3.6s9.5-1.6 9.5-3.6c0-1.2-1.7-2.2-4.7-2.8"/><path d="m15.4 8.6 1.6 1.8-2 1.3"/></g></symbol>
+<symbol id="roda" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.1-5M17 3v4h-4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="certo" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
+</svg>
+<header class="topo"><a id="insta" target="_blank" rel="noopener" hidden></a><div class="marca"><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
+<main id="provador">
+<div class="cab"><h1 id="t-titulo"></h1><p class="lead" id="t-sub"></p></div>
+<div class="pv-app">
+<div class="pv-centro">
+<section class="pv-palco" id="palco" aria-label="Corpo 3D para provar os desenhos">
+<div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
+<p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
+<div class="pv-capa" id="capa"><button type="button" class="pv-btn" id="pv-comecar"><svg><use href="#gira"/></svg><span>Começar</span></button><p>Gire o corpo e prove os desenhos na pele</p></div>
+<div class="pv-ferr" id="ferr" role="toolbar" aria-label="Ajustar o desenho escolhido"><button type="button" data-f="menor" aria-label="Diminuir"><svg><use href="#menos"/></svg><span>Menor</span></button><button type="button" data-f="maior" aria-label="Aumentar"><svg><use href="#mais"/></svg><span>Maior</span></button><button type="button" data-f="gira" aria-label="Girar 15 graus"><svg><use href="#roda"/></svg><span>Girar</span></button><button type="button" data-f="espelha" aria-label="Espelhar"><svg><use href="#espelha"/></svg><span>Espelhar</span></button><button type="button" data-f="tira" aria-label="Tirar do corpo"><svg><use href="#lixo"/></svg><span>Tirar</span></button><button type="button" data-f="ok" aria-label="Pronto"><svg><use href="#certo"/></svg><span>Pronto</span></button></div>
+<div class="pv-base"><button type="button" class="pv-z" id="z-menos" aria-label="Afastar" disabled><svg><use href="#menos"/></svg></button><div class="pv-seg pv-corpos" role="group" aria-label="Corpo"><button type="button" data-corpo="feminino" aria-pressed="true">Feminino</button><button type="button" data-corpo="masculino" aria-pressed="false">Masculino</button></div><button type="button" class="pv-z" id="z-mais" aria-label="Aproximar"><svg><use href="#mais"/></svg></button></div>
+</section>
+<div class="pv-trilho" id="trilho" aria-label="Disponíveis"></div>
+<div class="pv-legenda"><p class="pv-dica" id="dica">Arraste um desenho até a pele</p><p class="pv-local" id="local" hidden></p></div>
+</div>
+<aside class="pv-col pv-esq">
+<h2 class="pv-tit"><b></b>Disponíveis</h2>
+<ul class="pv-gaveta" id="gaveta"></ul>
+<div class="pv-pontos" id="pontos" aria-hidden="true"></div>
+<p class="pv-sob">Arraste até o corpo ou toque para aplicar.</p>
+</aside>
+<aside class="pv-col pv-dir">
+<div class="pv-ajuste" id="ajuste" aria-disabled="true">
+<h2 class="pv-tit"><b></b>Ajuste</h2>
+<p class="pv-aj-nome" id="aj-nome">Escolha uma peça no corpo</p>
+<div class="pv-cores" id="pv-cores" role="group" aria-label="Cor da tinta"></div>
+<label class="pv-faixa"><span>Tamanho <output id="o-tam">12 cm</output></span><input type="range" id="r-tam" min="4" max="45" step="1" value="12"></label>
+<label class="pv-faixa"><span>Giro <output id="o-giro">0°</output></span><input type="range" id="r-giro" min="-180" max="180" step="1" value="0"></label>
+<div class="pv-acoes"><button type="button" class="pv-mini" id="b-espelha"><svg><use href="#espelha"/></svg>Espelhar</button><button type="button" class="pv-mini" id="b-apaga"><svg><use href="#lixo"/></svg>Tirar</button></div>
+</div>
+<div class="pv-mont">
+<h2 class="pv-tit"><b></b>Sua montagem</h2>
+<ul class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ul>
+<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
+<p class="pv-nota">Tamanho estimado para um corpo de 1,70&nbsp;m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
+</div>
+</aside>
+</div>
+<section class="pv-recebe" id="recebe" hidden></section>
+</main>
+<div class="pv-aviso" id="aviso" role="status" hidden></div>
+<footer class="rod">Provador por <a href="https://lrgz.com.br">L R G Z</a></footer>
+<script>window.MANEQUIM_BASE="../../";window.MANEQUIM_CLIENTE={"slug": "maronez", "nome": "Maronez", "titulo": "Orçamento | Maronez", "site": "https://maronez.com.br", "siteRotulo": "maronez.com.br", "dominios": ["orcamento.maronez.com.br", "manequim.maronez.com.br"], "modo": "whatsapp", "whatsapp": "555191248594", "instagram": "https://www.instagram.com/maronezzzz/", "logo": "clientes/maronez/logo.png", "og": "https://maronez.com.br/assets/img/og.jpg", "fontes": "https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap", "tema": {"fundo": "#0b0a0a", "texto": "#ede4d6", "titulo": "#f0d9b5", "apoio": "#a3978a", "linha": "rgba(240,217,181,.16)", "palco": "#171312", "destaque": "#a00000", "sobre-destaque": "#f0d9b5", "destaque-texto": "#f0d9b5", "zona": "rgba(160,0,0,.3)", "selecao": "rgba(160,0,0,.58)", "chanfro": "12px"}, "textos": {"titulo": "Bora\ntatuar", "sub": "Toque no corpo, escolha o estilo e mande pro WhatsApp. Leva menos de um minuto.", "ola": "Olá, Maronez!", "fecho": "Tem horário nas próximas semanas? Se precisar, mando referências por aqui.", "ideia": "Ex.: algo que siga o músculo, sem figura."}, "estilos": [{"nome": "Freehand", "foto": "clientes/maronez/freehand.jpg"}, {"nome": "Ignorant", "foto": "clientes/maronez/ignorant-costas.jpg"}, {"nome": "Outro", "foto": ""}], "tamanhos": ["Pequena · até 10 cm", "Média · 10 a 20 cm", "Grande · mais de 20 cm", "Fechar região inteira"], "cores": [], "provador": {"titulo": "Prove no corpo", "pagina": "Provador | Maronez", "rotulo": "Disponíveis", "sub": "Gire o corpo, ponha um disponível na pele e ajuste tamanho e giro. A tinta acompanha as curvas como ficaria tatuada.", "resolucao": 1100, "flashes": [{"id": "tribal-monstro", "nome": "Tribal monstro", "img": "clientes/maronez/folhas/tribal-monstro.png", "colorido": true}, {"id": "shh", "nome": "Shh...", "img": "clientes/maronez/folhas/shh.png", "colorido": true}, {"id": "perfil-tribal", "nome": "Perfil tribal", "img": "clientes/maronez/folhas/perfil-tribal.png"}, {"id": "tribal-quadril", "nome": "Tribal do quadril", "img": "clientes/maronez/folhas/tribal-quadril.png", "colorido": true, "trava": {"lado": "d", "ref": "virilha", "d": 0.12, "x": 0.1, "dir": 15, "cm": 24, "zona": {"d": "Quadril direito", "e": "Quadril esquerdo"}}}, {"id": "tribal-perna", "nome": "Tribal da perna", "img": "clientes/maronez/folhas/tribal-perna.png", "trava": {"lado": "d", "ref": "joelho", "d": 0.06, "perna": true, "dir": 90, "cm": 42, "zona": {"d": "Lateral da perna direita", "e": "Lateral da perna esquerda"}}}, {"id": "tribal-coxa", "nome": "Tribal da coxa", "img": "clientes/maronez/folhas/tribal-coxa.png", "trava": {"lado": "d", "ref": "virilha", "d": -0.1, "perna": true, "dir": 0, "cm": 22, "zona": {"d": "Coxa direita", "e": "Coxa esquerda"}}}, {"id": "tribal-canela", "nome": "Tribal da canela", "img": "clientes/maronez/folhas/tribal-canela.png", "trava": {"lado": "d", "ref": "joelho", "d": -0.2, "perna": true, "dir": 0, "cm": 26, "zona": {"d": "Canela direita", "e": "Canela esquerda"}}}, {"id": "tribal-perna-longa", "nome": "Tribal perna longa", "img": "clientes/maronez/folhas/tribal-perna-longa.png", "trava": {"lado": "e", "ref": "joelho", "d": 0.02, "perna": true, "dir": 0, "cm": 70, "zona": {"d": "Perna direita inteira", "e": "Perna esquerda inteira"}}}, {"id": "tribal-costela", "nome": "Tribal da costela", "img": "clientes/maronez/folhas/tribal-costela.png", "trava": {"lado": "d", "ref": "lombar", "d": -0.03, "x": 0.08, "dir": 20, "cm": 46, "zona": {"d": "Costela direita até o quadril", "e": "Costela esquerda até o quadril"}}}, {"id": "peitoral-tribal", "nome": "Peitoral tribal (par)", "img": "clientes/maronez/folhas/peitoral-tribal.png", "trava": {"lado": "c", "ref": "axila", "d": 0.06, "x": 0, "dir": 0, "cm": 34, "zona": "Peito (os dois lados)"}}, {"id": "dedo-do-meio", "nome": "Dedo do meio", "img": "clientes/maronez/folhas/dedo-do-meio.png", "colorido": true}, {"id": "sorriso-de-serra", "nome": "Sorriso de serra", "img": "clientes/maronez/folhas/sorriso-de-serra.png", "colorido": true}, {"id": "mijando-na-bandeira", "nome": "Mijando na bandeira", "img": "clientes/maronez/folhas/mijando-na-bandeira.png", "colorido": true}, {"id": "chapado", "nome": "Chapado", "img": "clientes/maronez/folhas/chapado.png", "colorido": true}, {"id": "capuz", "nome": "Capuz", "img": "clientes/maronez/folhas/capuz.png"}, {"id": "mad", "nome": "MAD", "img": "clientes/maronez/folhas/mad.png"}, {"id": "pastelina", "nome": "Pastelina", "img": "clientes/maronez/folhas/pastelina.png", "colorido": true}, {"id": "obrigado", "nome": "Obrigado por mudar minha vida", "img": "clientes/maronez/folhas/obrigado.png"}, {"id": "please-be-patient", "nome": "Please be patient", "img": "clientes/maronez/folhas/please-be-patient.png", "colorido": true}, {"id": "problem", "nome": "Problem", "img": "clientes/maronez/folhas/problem.png", "colorido": true}, {"id": "i-love-beijar-djs", "nome": "I ♥ beijar DJs", "img": "clientes/maronez/folhas/i-love-beijar-djs.png", "colorido": true}, {"id": "npc", "nome": "NPC", "img": "clientes/maronez/folhas/npc.png"}, {"id": "fodase", "nome": "Fodase", "img": "clientes/maronez/folhas/fodase.png", "colorido": true}, {"id": "yo-dont-do-drugs", "nome": "Yo dont do drugs", "img": "clientes/maronez/folhas/yo-dont-do-drugs.png", "colorido": true}, {"id": "gato-dj", "nome": "Gato DJ", "img": "clientes/maronez/folhas/gato-dj.png"}, {"id": "capivara", "nome": "Capivara armada", "img": "clientes/maronez/folhas/capivara.png"}, {"id": "stella", "nome": "Stella", "img": "clientes/maronez/folhas/stella.png"}, {"id": "gato-pensando", "nome": "Gato pensando", "img": "clientes/maronez/folhas/gato-pensando.png"}, {"id": "penis", "nome": "Penis™", "img": "clientes/maronez/folhas/penis.png"}, {"id": "made-in-japan", "nome": "Made in Japan", "img": "clientes/maronez/folhas/made-in-japan.png", "colorido": true}, {"id": "polo-gang", "nome": "Polo gang", "img": "clientes/maronez/folhas/polo-gang.png"}, {"id": "gato-deitado", "nome": "Gato deitado", "img": "clientes/maronez/folhas/gato-deitado.png"}, {"id": "soundcloud", "nome": "SoundCloud", "img": "clientes/maronez/folhas/soundcloud.png"}, {"id": "ps2", "nome": "PS2", "img": "clientes/maronez/folhas/ps2.png"}, {"id": "canivete", "nome": "Canivete", "img": "clientes/maronez/folhas/canivete.png"}, {"id": "leon", "nome": "Leon", "img": "clientes/maronez/folhas/leon.png"}, {"id": "coringa", "nome": "Coringa e porco", "img": "clientes/maronez/folhas/coringa.png"}, {"id": "ponei", "nome": "Pônei", "img": "clientes/maronez/folhas/ponei.png"}, {"id": "calcinha-preta", "nome": "Calcinha Preta", "img": "clientes/maronez/folhas/calcinha-preta.png"}, {"id": "carrot-cobain", "nome": "Carrot Cobain", "img": "clientes/maronez/folhas/carrot-cobain.png"}, {"id": "better-call-saul", "nome": "Better call Saul", "img": "clientes/maronez/folhas/better-call-saul.png"}, {"id": "mapa", "nome": "Mapa", "img": "clientes/maronez/folhas/mapa.png"}], "semMarca": true}};window.PV_V="15";</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module" src="../../provador/provador.js?v=15"></script>
+</body>
+</html>

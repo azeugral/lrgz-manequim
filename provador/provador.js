@@ -415,7 +415,9 @@ function desenha(q) {
   const orig = q.cor === "original";
   if (q.mat.map !== (orig ? q.texCor : q.tex)) { q.mat.map = orig ? q.texCor : q.tex; q.mat.needsUpdate = true; }
   q.mat.color.set(orig ? "#ffffff" : q.cor === "base" ? TINTA : CORES[q.cor]);
-  q.zona = onde(q.p, q.n);
+  // peça travada: o nome do local vem do tatuador (o automático chamaria a costela de "Abdômen")
+  const z = q.trava && q.trava.zona;
+  q.zona = z ? (typeof z === "string" ? z : z[q.lado] || onde(q.p, q.n)) : onde(q.p, q.n);
   if (pecas[atual] === q) mostraSel();
   pedeQuadro();
 }
@@ -436,13 +438,39 @@ function mostraSel() {
   rGiro.value = Math.round(q.giro); oGiro.textContent = `${Math.round(q.giro)}°`;
   $$("#pv-cores button").forEach((b) => { b.setAttribute("aria-pressed", b.dataset.cor === q.cor); if (b.dataset.cor === "original") b.hidden = !q.colorido; });
   localEl.hidden = false; dica.hidden = true;
-  localEl.innerHTML = `<b>${esc(q.nome)}</b> · ${q.zona} · ~${q.cm} cm · ${Math.round(q.giro)}°${TOQUE ? "<small>Pinça muda o tamanho · gire os dois dedos para girar</small>" : ""}`;
+  localEl.innerHTML = `<b>${esc(q.nome)}</b> · ${q.zona}${q.trava ? " (local fixo)" : ""} · ~${q.cm} cm${q.trava ? "" : ` · ${Math.round(q.giro)}°`}${TOQUE ? "<small>Pinça muda o tamanho · gire os dois dedos para girar</small>" : ""}`;
 }
 function escolhe(i) {
   atual = i; mostraSel();
   palco.classList.toggle("sel", i >= 0);
   $$("li", lista).forEach((li) => li.classList.toggle("ativo", +li.dataset.i === i));
 }
+/* ---------- desenho com local certo (trava no JSON do cliente): o tatuador só faz aquela peça naquele lugar ----------
+   trava: { lado: "d" | "e" | "c", ref: medida do corpo (MED), d: deslocamento na altura, x: afastamento do meio,
+            perna: true acha o meio da perna naquela altura, dir: 0 frente / 90 lateral de fora, cm, giro } */
+function pontoTravado(t, ladoQ) {
+  const M = MED[corpoAtual], s = ALTURA / M.H, y = (M[t.ref] + (t.d || 0)) * s;
+  const sg = ladoQ === "e" ? 1 : ladoQ === "d" ? -1 : 0;
+  let x = sg * (t.x || 0) * s;
+  if (t.perna && sg) {   // varre de frente: o trecho com pele daquele lado é a perna
+    const xs = [];
+    for (let k = .01; k < .32; k += .004) {
+      raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
+      if (raio.intersectObject(malha, false).length) xs.push(sg * k);
+    }
+    if (xs.length) x = (Math.min(...xs) + Math.max(...xs)) / 2;
+  }
+  const a = (t.dir || 0) * Math.PI / 180, fora = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a));
+  raio.set(new THREE.Vector3(x, y, 0).addScaledVector(fora, 2), fora.clone().negate());
+  const h = raio.intersectObject(malha, false)[0];
+  return h ? h.point : null;
+}
+function colocaTravada(q) {
+  const p = pontoTravado(q.trava, q.lado); if (!p) return false;
+  q.p.copy(p); q.n = normalEm(p, Math.min(.06, q.cm / 100 / 3 + .015)); return true;
+}
+const tamanho = (q, v) => q.trava ? THREE.MathUtils.clamp(Math.round(v), Math.round(q.cm0 * .8), Math.round(q.cm0 * 1.2)) : THREE.MathUtils.clamp(Math.round(v), 4, 45);
+const avisoTrava = () => avisa("Esse desenho tem local certo no corpo. Dá pra mudar o tamanho e passar pro outro lado.");
 async function poe(f, p) {
   if (!malha) return;
   const t = await textura(f.id);
@@ -454,6 +482,7 @@ async function poe(f, p) {
   const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const q = { id: f.id, nome: f.nome, r: f.r, colorido: !!f.colorido, cm: 12, giro: 0, flip: false, cor: cor0, p: p.clone(), n: null, tex, texCor, mat };
   q.n = normalEm(q.p, .05);
+  if (f.trava) { q.trava = f.trava; q.lado = f.trava.lado || "c"; q.cm = q.cm0 = f.trava.cm; q.giro = f.trava.giro || 0; if (!colocaTravada(q)) return; }
   pecas.push(q);
   desenha(q); escolhe(pecas.length - 1); atualizaLista();
   palco.classList.remove("vazio");
@@ -487,11 +516,16 @@ function olhaPara(q) {
 /* ---------- painel ---------- */
 let agendado = null;
 const redesenha = (q) => { if (agendado) return; agendado = requestAnimationFrame(() => { agendado = null; desenha(q); }); };
-rTam.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; q.cm = +rTam.value; redesenha(q); });
+rTam.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; q.cm = tamanho(q, +rTam.value); if (q.cm !== +rTam.value) rTam.value = q.cm; redesenha(q); });
 rTam.addEventListener("change", atualizaLista);
-rGiro.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; q.giro = +rGiro.value; redesenha(q); });
+rGiro.addEventListener("input", () => { const q = pecas[atual]; if (!q) return; if (q.trava) { rGiro.value = Math.round(q.giro); return avisoTrava(); } q.giro = +rGiro.value; redesenha(q); });
 $$("#pv-cores button").forEach((b) => b.addEventListener("click", () => { const q = pecas[atual]; if (!q) return; q.cor = b.dataset.cor; desenha(q); atualizaLista(); }));
-$("#b-espelha").addEventListener("click", () => { const q = pecas[atual]; if (!q) return; q.flip = !q.flip; desenha(q); });
+function espelha(q) {
+  q.flip = !q.flip;
+  if (q.trava && q.lado !== "c") { q.lado = q.lado === "d" ? "e" : "d"; q.giro = -q.giro; colocaTravada(q); olhaPara(q); }
+  desenha(q); atualizaLista();
+}
+$("#b-espelha").addEventListener("click", () => { const q = pecas[atual]; if (q) espelha(q); });
 $("#b-apaga").addEventListener("click", () => tira(atual));
 addEventListener("keydown", (e) => {
   if (atual < 0 || e.target.closest("input")) return;
@@ -604,6 +638,7 @@ tela.addEventListener("pointerdown", (e) => {
   if (i < 0) { controles.enabled = true; gesto = { tipo: "gira", x: e.clientX, y: e.clientY }; return; }
   controles.enabled = false;
   if (i !== atual) escolhe(i);
+  if (pecas[i].trava) { controles.enabled = true; gesto = { tipo: "gira", x: e.clientX, y: e.clientY, trava: 1 }; return; }
   const q = pecas[i], c = q.p.clone().project(camera), r = tela.getBoundingClientRect();
   const sx = (c.x + 1) / 2 * r.width + r.left, sy = (1 - c.y) / 2 * r.height + r.top;
   gesto = { tipo: "move", q, dx: sx - e.clientX, dy: sy - e.clientY };
@@ -617,7 +652,8 @@ tela.addEventListener("pointermove", (e) => {
     e.stopImmediatePropagation();
     if (dedos.size < 2) return;
     const m = par(), q = gesto.q, G = gesto;
-    q.cm = THREE.MathUtils.clamp(Math.round(G.cm0 * m.d / G.d0), 4, 45);
+    q.cm = tamanho(q, G.cm0 * m.d / G.d0);
+    if (q.trava) { redesenha(q); return; }
     // giro: soma o quanto os dedos giraram (sem pulo em ±180°); só começa depois de 6° para não girar sem querer no zoom
     let da = m.a - G.aAnt; da = Math.atan2(Math.sin(da), Math.cos(da)); G.aAnt = m.a;
     G.volta += THREE.MathUtils.radToDeg(da);
@@ -651,7 +687,7 @@ tela.addEventListener("pointermove", (e) => {
 });
 const solta = (e) => {
   dedos.delete(e.pointerId);
-  if (gesto && gesto.tipo === "gira" && Math.hypot(e.clientX - gesto.x, e.clientY - gesto.y) < 5 && e.type === "pointerup" && atual >= 0) escolhe(-1);
+  if (gesto && gesto.tipo === "gira" && !gesto.trava && Math.hypot(e.clientX - gesto.x, e.clientY - gesto.y) < 5 && e.type === "pointerup" && atual >= 0) escolhe(-1);
   if (gesto && (gesto.tipo === "move" || gesto.tipo === "pinca")) atualizaLista();
   if (gesto && gesto.tipo === "pinca") gesto = { tipo: "fim" };   // o dedo que sobra não arrasta nada
   if (!dedos.size) { gesto = null; controles.enabled = true; palco.classList.remove("pega"); }
@@ -663,10 +699,10 @@ tela.addEventListener("pointercancel", solta);
 $("#ferr").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-f]"), q = pecas[atual]; if (!b || !q) return;
   const f = b.dataset.f;
-  if (f === "menor") q.cm = Math.max(4, q.cm - 2);
-  else if (f === "maior") q.cm = Math.min(45, q.cm + 2);
-  else if (f === "gira") q.giro = angulo(q.giro - 15);   // sentido do relógio, como o ícone
-  else if (f === "espelha") q.flip = !q.flip;
+  if (f === "menor") q.cm = tamanho(q, q.cm - 2);
+  else if (f === "maior") q.cm = tamanho(q, q.cm + 2);
+  else if (f === "gira") { if (q.trava) return avisoTrava(); q.giro = angulo(q.giro - 15); }   // sentido do relógio, como o ícone
+  else if (f === "espelha") return espelha(q);
   else if (f === "tira") return tira(atual);
   else if (f === "ok") return escolhe(-1);
   desenha(q); atualizaLista();
@@ -675,8 +711,8 @@ tela.addEventListener("wheel", (e) => {
   const q = pecas[atual];
   if (q && acerta(tocaCorpo(e.clientX, e.clientY)) === atual) {   // em cima da peça escolhida: tamanho (Shift: giro)
     e.preventDefault(); e.stopImmediatePropagation();
-    if (e.shiftKey) q.giro = (((q.giro + (e.deltaY || e.deltaX) * .15) + 540) % 360) - 180;
-    else q.cm = THREE.MathUtils.clamp(Math.round(q.cm * Math.exp(-e.deltaY * .0015) + (e.deltaY < 0 ? .5 : -.5)), 4, 45);
+    if (e.shiftKey) { if (!q.trava) q.giro = (((q.giro + (e.deltaY || e.deltaX) * .15) + 540) % 360) - 180; }
+    else q.cm = tamanho(q, q.cm * Math.exp(-e.deltaY * .0015) + (e.deltaY < 0 ? .5 : -.5));
     redesenha(q); clearTimeout(tela.tl); tela.tl = setTimeout(atualizaLista, 250); return;
   }
   // corpo inteiro na tela e rodinha para baixo: deixa a página rolar
@@ -695,6 +731,7 @@ async function trocaCorpo(nome, primeira) {
   malha = info.malha; corpoInfo = info; cena.add(malha);
   palco.classList.remove("carregando"); carregando.hidden = true;
   for (const q of pecas) {
+    if (q.trava && colocaTravada(q)) { desenha(q); continue; }
     raio.set(q.p.clone().addScaledVector(q.n, .25), q.n.clone().negate());
     const h = raio.intersectObject(malha, false)[0];
     if (h) { q.p.copy(h.point); q.n = normalEm(q.p, .05); }
@@ -816,7 +853,15 @@ function arrumaTrilho() {
 mq.addEventListener("change", arrumaTrilho); arrumaTrilho();
 ajustaTamanho();
 requestAnimationFrame(quadro);
-fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); });
+fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; montaGaveta(); if (Q.get("d")) prova(Q.get("d")); });
+/* ---------- desenho pedido de fora: ?d=<id> ou postMessage({manequim:1, provar:<id>}) do site do cliente ---------- */
+async function prova(id) {
+  const f = FL.find((x) => x.id === id); if (!f) return;
+  ativa();
+  for (let n = 0; !malha && n < 200; n++) await new Promise((ok) => setTimeout(ok, 50));   // espera o corpo carregar
+  poe(f, centroDaTela());
+}
+addEventListener("message", (e) => { const d = e.data; if (d && d.manequim && typeof d.provar === "string") prova(d.provar); });
 /* ---------- começar: até o clique, o corpo é só imagem e a página rola por cima dele ---------- */
 let ativo = false;
 function ativa() {
