@@ -50,7 +50,7 @@
   "trava": {
    "lado": "d",
    "ref": "virilha",
-   "d": 0.12,
+   "d": 0.19,
    "x": 0.1,
    "dir": 15,
    "cm": 24,
@@ -134,18 +134,19 @@
  {
   "id": "tribal-costela",
   "nome": "Tribal da costela",
-  "r": 2.0221,
+  "r": 2.4664,
   "trava": {
    "lado": "d",
-   "ref": "lombar",
-   "d": -0.03,
-   "x": 0.08,
+   "ref": "virilha",
+   "d": 0.17,
+   "x": 0.1,
    "dir": 20,
-   "cm": 46,
+   "cm": 60,
    "zona": {
     "d": "Costela direita até o quadril",
     "e": "Costela esquerda até o quadril"
-   }
+   },
+   "giro": 12
   }
  },
  {

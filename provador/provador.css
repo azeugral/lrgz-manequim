@@ -34,7 +34,7 @@
 /* disponíveis: grade 3 x 3, cartões de papel iguais */
 .pv-gaveta { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 8px; }
 .pv-gaveta li { display: grid; gap: 8px; min-width: 0; }
-.pv-gaveta.muitos { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.pv-gaveta.muitos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .pv-gaveta.muitos li { gap: 0; }
 .pv-gaveta.muitos span { display: none; }
 .pv-gaveta.muitos button { padding: 20% 10% 8%; }
@@ -242,10 +242,10 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-palco.sel.ativo .pv-ferr { opacity: 1; visibility: visible; }
   .pv-palco.sel .pv-base { opacity: 0; pointer-events: none; }
 
-  /* disponíveis numa bandeja colada embaixo do corpo: 5 por vez, desliza para o lado */
+  /* disponíveis numa bandeja colada embaixo do corpo: 4 por vez, desliza para o lado */
   .pv-esq { display: none; }
   .pv-trilho { padding: 12px 12px 10px; background: var(--palco); box-shadow: inset 0 0 0 1px var(--linha); margin-top: -1px; }
-  .pv-trilho .pv-gaveta { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 4 * 8px) / 5); gap: 8px; overflow-x: auto; overscroll-behavior-x: contain;
+  .pv-trilho .pv-gaveta { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 8px) / 4); gap: 8px; overflow-x: auto; overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .pv-trilho .pv-gaveta::-webkit-scrollbar { display: none; }
   .pv-trilho .pv-gaveta li { scroll-snap-align: start; gap: 0; }

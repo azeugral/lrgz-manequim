@@ -328,7 +328,7 @@ function textura(id) {
       g.putImageData(d, 0, 0);
       ok({ canvas: c, cor, img: im });
     };
-    im.onerror = erro; im.src = `${DIR}${id}.webp`;
+    im.onerror = erro; im.src = `${DIR}${id}.webp${VV}`;
   }));
 }
 function texMoldura() {
@@ -340,6 +340,7 @@ function texMoldura() {
 const molduraMat = new THREE.MeshBasicMaterial({ map: texMoldura(), color: new THREE.Color(PV.moldura || "#2f6bff"), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -6 });
 
 /* ---------- peças ---------- */
+const VV = `?v=${window.PV_V || 1}`;   // desenho refeito com o mesmo nome: a versão fura o cache
 let FL = [], VIS = [];   // VIS: o que aparece na gaveta (partes de conjunto ficam de fora)
 const pecas = []; let atual = -1, moldura = null;
 const dims = (q) => { const base = q.cm / 100; return q.r >= 1 ? { w: base / q.r, h: base } : { w: base, h: base * q.r }; };
@@ -539,7 +540,7 @@ function atualizaLista() {
   // cartões iguais, centrados: miniatura no papel, nome, local e tamanho
   const sel = pecas[atual];
   lista.innerHTML = unicas().map((q) => { const i = pecas.indexOf(q), ic = q.grupo ? q.grupo.id : q.id, on = sel && (sel === q || (q.grupo && sel.grupo === q.grupo));
-    return `<li data-i="${i}" class="${on ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${ic}-p.webp" alt="">` : `<i style="--m:url(${DIR}${ic}-p.webp);background:${q.cor === "base" ? TINTA : CORES[q.cor]}"></i>`}</b>
+    return `<li data-i="${i}" class="${on ? "ativo" : ""}" tabindex="0"><b class="pv-ico">${q.cor === "original" ? `<img src="${DIR}${ic}-p.webp${VV}" alt="">` : `<i style="--m:url(${DIR}${ic}-p.webp${VV});background:${q.cor === "base" ? TINTA : CORES[q.cor]}"></i>`}</b>
     <span>${esc(q.nome)}</span><small>${nomeZona(q)}</small><small>${q.grupo ? "Arte completa" : `~${q.cm} cm`}</small></li>`; }).join("");
 }
 lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (!li) return; escolhe(+li.dataset.i); olhaPara(pecas[atual]); });
@@ -609,7 +610,7 @@ function centroDaTela() {
 }
 function montaGaveta() {
   gaveta.classList.toggle("muitos", VIS.length > 9);   // mais de 9: 4 por linha no computador, sem o nome embaixo
-  gaveta.innerHTML = VIS.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp)"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
+  gaveta.innerHTML = VIS.map((f, i) => `<li><button type="button" data-i="${i}" aria-label="Pôr no corpo: ${esc(f.nome)}" title="${esc(f.nome)}">${f.colorido ? `<img src="${DIR}${f.id}-p.webp${VV}" alt="" draggable="false">` : `<i style="--m:url(${DIR}${f.id}-p.webp${VV})"></i>`}<em>${String(i + 1).padStart(2, "0")}</em></button><span>${esc(f.nome)}</span></li>`).join("");
   $$("button", gaveta).forEach((b) => {
     const f = VIS[+b.dataset.i];
     let ini = null, fant = null;
@@ -626,7 +627,7 @@ function montaGaveta() {
         // no toque, a grade rola a página: o desenho entra com um toque (e depois anda pela pele)
         if (toque || Math.hypot(dx, dy) < 6) return;
         try { b.setPointerCapture(e.pointerId); } catch (_) {}
-        fant = document.createElement("div"); fant.className = "pv-fantasma" + (f.colorido ? " cor" : ""); fant.style.setProperty("--m", `url(${DIR}${f.id}-p.webp)`);
+        fant = document.createElement("div"); fant.className = "pv-fantasma" + (f.colorido ? " cor" : ""); fant.style.setProperty("--m", `url(${DIR}${f.id}-p.webp${VV})`);
         document.body.appendChild(fant); document.body.classList.add("pv-arrasta");
       }
       fant.style.left = e.clientX + "px"; fant.style.top = e.clientY + "px";
@@ -654,7 +655,7 @@ function montaGaveta() {
     });
   });
   // celular: a grade vira uma faixa de 3 por vez; os pontos mostram a página
-  const pontos = $("#pontos"), pags = Math.max(1, Math.ceil(VIS.length / 5));
+  const pontos = $("#pontos"), pags = Math.max(1, Math.ceil(VIS.length / 4));
   pontos.innerHTML = Array.from({ length: pags }, (_, k) => `<i data-k="${k}"></i>`).join("");
   const marca = () => { const max = gaveta.scrollWidth - gaveta.clientWidth, k = max > 0 ? Math.round(gaveta.scrollLeft / max * (pags - 1)) : 0; $$("i", pontos).forEach((p, n) => p.classList.toggle("ativo", n === k)); };
   gaveta.addEventListener("scroll", () => requestAnimationFrame(marca), { passive: true }); marca();
