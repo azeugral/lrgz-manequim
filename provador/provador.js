@@ -37,6 +37,9 @@ const VITRINE = parent !== window && Q.has("vitrine");
 Object.entries(C.tema || {}).forEach(([k, v]) => document.documentElement.style.setProperty("--" + k, v));
 document.documentElement.dataset.cliente = C.slug;
 if (VITRINE) document.documentElement.classList.add("vitrine");
+// cena clara (estúdio de fundo claro, como os provadores de referência): no JSON do cliente (provador.cena) ou ?cena=clara
+const CLARA = (Q.get("cena") || PV.cena) === "clara";
+if (CLARA) document.documentElement.classList.add("cena-clara");
 // dentro do próprio site do cliente (PV.semTopo), sem o cabeçalho de Instagram e site: já estão na página de fora
 if (VITRINE && PV.semTopo) document.documentElement.classList.add("sem-topo");
 $("#logo").src = url(C.logo); $("#logo").alt = C.nome;
@@ -178,7 +181,7 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
   cena.add(sol, sol.target, piso);
 }
 
-const pele = new THREE.MeshStandardMaterial({ color: 0xe9e3da, roughness: .6, metalness: 0, vertexColors: DEBUG });
+const pele = new THREE.MeshStandardMaterial({ color: CLARA ? 0xd6cdc1 : 0xe9e3da, roughness: .6, metalness: 0, vertexColors: DEBUG });
 const controles = new OrbitControls(camera, renderer.domElement);
 Object.assign(controles, { enableDamping: true, dampingFactor: .09, rotateSpeed: .75, zoomSpeed: .9, screenSpacePanning: true, minDistance: .38, minPolarAngle: .28, maxPolarAngle: 2.75, zoomToCursor: true });
 controles.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
@@ -486,7 +489,7 @@ function decal(q, w, h, tex) {
   // desenho travado no braço: abaixo da axila, só a pele do braço (o lado do tronco fica limpo)
   const soBraco = q.trava && q.trava.braco, MB = MED[corpoAtual], sb = ALTURA / MB.H;
   const sgP = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, soPerna = !!(q.trava && sgP && q.p.y / sb < MB.virilha);
-  const corte = q.plano ? CORTE_PLANO : CORTE_LIVRE, qn = q.n;
+  const corte = q.cil ? -2 : q.plano ? CORTE_PLANO : CORTE_LIVRE, qn = q.n;
   for (const t of fila) {
     if (corte > -1) {   // fora só o triângulo inteiro de lado; o corte fino é por pixel, no material (sem degrau nem borrão)
       let d = -9;
@@ -498,12 +501,13 @@ function decal(q, w, h, tex) {
     if (soPerna && cen[t * 3 + 1] / sb < MB.virilha && cen[t * 3] * sgP < .004) continue;
     let umin = 9, umax = -9, vmin = 9, vmax = -9;
     for (let k = 0; k < 3; k++) {
-      v3.fromBufferAttribute(pos, idx[t * 3 + k]); local(v3, q, E, l);
+      v3.fromBufferAttribute(pos, idx[t * 3 + k]); if (q.cil) localCil(v3, q, l); else local(v3, q, E, l);
       let u = .5 + l.x / w, vv = .5 + l.y / h; if (q.flip) u = 1 - u;
       uv[k * 2] = u; uv[k * 2 + 1] = vv;
       umin = Math.min(umin, u); umax = Math.max(umax, u); vmin = Math.min(vmin, vv); vmax = Math.max(vmax, vv);
     }
     if (umax < 0 || umin > 1 || vmax < 0 || vmin > 1) continue;
+    if (q.cil && umax - umin > .5) continue;   // costura do cilindro (atrás da perna): o triângulo não vira uma faixa esticada
     for (let k = 0; k < 3; k++) {
       const v = idx[t * 3 + k], nx = nor.getX(v), ny = nor.getY(v), nz = nor.getZ(v);
       P.push(pos.getX(v) + nx * .0006, pos.getY(v) + ny * .0006, pos.getZ(v) + nz * .0006); N.push(nx, ny, nz);
@@ -520,7 +524,7 @@ function desenha(q) {
   if (q.malha) { cena.remove(q.malha); q.malha.geometry.dispose(); }
   const { w, h } = dims(q);
   q.malha = new THREE.Mesh(decal(q, w, h, q.tex), q.mat);
-  q.mat.userData.u.uQn.value.copy(q.n); q.mat.userData.u.uCorte.value = q.plano ? CORTE_PLANO : CORTE_LIVRE;
+  q.mat.userData.u.uQn.value.copy(q.n); q.mat.userData.u.uCorte.value = q.cil ? -2 : q.plano ? CORTE_PLANO : CORTE_LIVRE;
   q.malha.renderOrder = 2 + pecas.indexOf(q);
   cena.add(q.malha);
   const orig = q.cor === "original";
@@ -592,7 +596,42 @@ function pontoTravado(t, ladoQ) {
 function colocaTravada(q) {
   const p = pontoTravado(q.trava, q.lado); if (!p) return false;
   const t = q.trava, sg = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, a = (t.dir || 0) * Math.PI / 180;
-  q.p.copy(p); q.n = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a)).normalize(); q.plano = true; return true;
+  q.p.copy(p); q.n = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a)).normalize(); q.plano = true;
+  q.cil = t.perna && sg && t.envolve !== false ? eixoPerna(q, sg) : null;
+  return true;
+}
+// Tribal de perna: em vez de projetar reto (comprime na lateral), a arte dá a volta na perna como pele de verdade.
+// O eixo é o meio da perna, medido de 3 em 3 cm (frente/trás e dentro/fora), então acompanha joelho e canela.
+function centroPerna(y, sg) {
+  const xs = [];
+  for (let k = .004; k < .32; k += .003) {
+    raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
+    if (raio.intersectObject(malha, false).length) xs.push(k); else if (xs.length) break;
+  }
+  if (!xs.length) return null;
+  const x = sg * (xs[0] + xs[xs.length - 1]) / 2;
+  raio.set(new THREE.Vector3(x, y, 2), new THREE.Vector3(0, 0, -1)); const f = raio.intersectObject(malha, false)[0];
+  raio.set(new THREE.Vector3(x, y, -2), new THREE.Vector3(0, 0, 1)); const b = raio.intersectObject(malha, false)[0];
+  return f && b ? { y, x, z: (f.point.z + b.point.z) / 2 } : null;
+}
+function eixoPerna(q, sg) {
+  const { h } = dims(q), M = MED[corpoAtual], s = ALTURA / M.H, topo = (M.virilha - .03) * s;
+  const pts = [];
+  for (let y = Math.max(.04, q.p.y - h * .75 - .03); y <= Math.min(topo, q.p.y + h * .75 + .03); y += .03) { const c = centroPerna(y, sg); if (c) pts.push(c); }
+  return pts.length > 1 ? { pts, th0: Math.atan2(q.n.x, q.n.z) } : null;
+}
+function centroEm(cil, y) {
+  const P = cil.pts;
+  if (y <= P[0].y) return P[0];
+  for (let i = 1; i < P.length; i++) if (y <= P[i].y) { const a = P[i - 1], b = P[i], k = (y - a.y) / (b.y - a.y); return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k }; }
+  return P[P.length - 1];
+}
+function localCil(v, q, out) {
+  const c = centroEm(q.cil, v.y), dx = v.x - c.x, dz = v.z - c.z;
+  let th = Math.atan2(dx, dz) - q.cil.th0; th = Math.atan2(Math.sin(th), Math.cos(th));
+  const ul = th * Math.hypot(dx, dz), vl = v.y - q.p.y, g = q.giro * Math.PI / 180;
+  out.x = ul * Math.cos(g) - vl * Math.sin(g); out.y = ul * Math.sin(g) + vl * Math.cos(g); out.z = 0;
+  return out;
 }
 const tamanho = (q, v) => q.trava ? THREE.MathUtils.clamp(Math.round(v), Math.round(q.cm0 * .8), Math.round(q.cm0 * 1.2)) : THREE.MathUtils.clamp(Math.round(v), 4, 45);
 const avisoTrava = () => avisa("Esse desenho tem local certo no corpo. Dá pra mudar o tamanho e passar pro outro lado.");

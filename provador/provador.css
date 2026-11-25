@@ -286,3 +286,6 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
 @media (min-width: 1081px) { .pv-fixo { display: none; } }
 @keyframes pv-sobe { from { transform: translateY(100%); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .pv-fixo { animation: none; } }
+
+/* ---------- cena clara: fundo de estúdio claro, piso com sombra; a tinta preta vira o destaque ---------- */
+html.cena-clara #palco.pv-palco { background: radial-gradient(62% 52% at 50% 40%, #f7f4ef 0%, #e9e3da 55%, #d3cbbf 100%), #e9e3da; }

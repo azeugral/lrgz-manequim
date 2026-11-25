@@ -524,6 +524,7 @@
       }
     ],
     "semMarca": true,
-    "semTopo": true
+    "semTopo": true,
+    "cena": "clara"
   }
 }
