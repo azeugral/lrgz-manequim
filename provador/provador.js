@@ -134,7 +134,7 @@ function onde(p, n) {
 const palco = $("#palco"), gaveta = $("#gaveta"), lista = $("#lista"), ajuste = $("#ajuste");
 const dica = $("#dica"), localEl = $("#local"), aviso = $("#aviso"), carregando = $("#carregando");
 const rTam = $("#r-tam"), rGiro = $("#r-giro"), oTam = $("#o-tam"), oGiro = $("#o-giro");
-const bPede = $("#b-pede"), bSalva = $("#b-salva");
+const bPede = $("#b-pede"), bSalva = $("#b-salva"), bLink = $("#b-link");
 
 function semTresD() {
   carregando.hidden = false; carregando.classList.add("erro");
@@ -146,7 +146,7 @@ let renderer;
 try {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: false });
 } catch (e) { semTresD(); throw e; }
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
@@ -168,18 +168,6 @@ cena.add(chave, chave.target, preenche, preenche.target, contra, contra.target);
   const chao = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
   chao.rotation.x = -Math.PI / 2; chao.position.y = .002; cena.add(chao);
 }
-// sombra de verdade no chão: luz fixa de cima (estúdio), o corpo projeta, o chão só recebe a sombra
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-{
-  const sol = new THREE.DirectionalLight(0xffffff, .45);
-  sol.position.set(.7, 3.4, 1.4); sol.target.position.set(0, .85, 0);
-  sol.castShadow = true; sol.shadow.mapSize.set(2048, 2048);
-  Object.assign(sol.shadow.camera, { left: -.9, right: .9, top: 1.2, bottom: -1.2, near: 1, far: 6 });
-  sol.shadow.bias = -.0004; sol.shadow.normalBias = .01;
-  const piso = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.ShadowMaterial({ color: 0x1a140e, opacity: .2 }));
-  piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true;
-  cena.add(sol, sol.target, piso);
-}
 
 const pele = new THREE.MeshStandardMaterial({ color: CLARA ? 0xd6cdc1 : 0xe9e3da, roughness: .6, metalness: 0, vertexColors: DEBUG });
 const controles = new OrbitControls(camera, renderer.domElement);
@@ -189,39 +177,6 @@ controles.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 /* ---------- corpos ---------- */
 const corpos = {}; let corpoAtual = "feminino", malha = null, corpoVis = null, corpoInfo = null;
 const carregador = new GLTFLoader();
-// Malha fina: cada triângulo vira 4, e o ponto novo de cada aresta sai da reta e segue a curva da pele
-// (tesselação de Phong). Os vértices originais não mudam, então medidas e travas valem igual.
-// A tinta passa a ter ~4x mais pontos para acompanhar o corpo; os raios (toque, travas) seguem na malha leve.
-function malhaFina(geo) {
-  const pos = geo.attributes.position, nor = geo.attributes.normal, ix = geo.index.array, nv = pos.count;
-  const arestas = new Map(), P = [], N = [];
-  for (let i = 0; i < nv; i++) { P.push(pos.getX(i), pos.getY(i), pos.getZ(i)); N.push(nor.getX(i), nor.getY(i), nor.getZ(i)); }
-  const A = .75;
-  const meio = (a, b) => {
-    const k = a < b ? a * nv + b : b * nv + a; let m = arestas.get(k);
-    if (m !== undefined) return m;
-    const ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2], bx = P[b * 3], by = P[b * 3 + 1], bz = P[b * 3 + 2];
-    const mx = (ax + bx) / 2, my = (ay + by) / 2, mz = (az + bz) / 2;
-    const nax = N[a * 3], nay = N[a * 3 + 1], naz = N[a * 3 + 2], nbx = N[b * 3], nby = N[b * 3 + 1], nbz = N[b * 3 + 2];
-    const da = (mx - ax) * nax + (my - ay) * nay + (mz - az) * naz, db = (mx - bx) * nbx + (my - by) * nby + (mz - bz) * nbz;
-    const px = mx - (da * nax + db * nbx) / 2, py = my - (da * nay + db * nby) / 2, pz = mz - (da * naz + db * nbz) / 2;
-    P.push(mx + (px - mx) * A, my + (py - my) * A, mz + (pz - mz) * A);
-    let nx = nax + nbx, ny = nay + nby, nz = naz + nbz; const l = Math.hypot(nx, ny, nz) || 1;
-    N.push(nx / l, ny / l, nz / l);
-    m = P.length / 3 - 1; arestas.set(k, m); return m;
-  };
-  const nt = Math.floor(geo.index.count / 3), I = new Uint32Array(nt * 12);
-  for (let t = 0, o = 0; t < nt * 3; t += 3) {
-    const a = ix[t], b = ix[t + 1], c = ix[t + 2], ab = meio(a, b), bc = meio(b, c), ca = meio(c, a);
-    I[o++] = a; I[o++] = ab; I[o++] = ca; I[o++] = ab; I[o++] = b; I[o++] = bc;
-    I[o++] = ca; I[o++] = bc; I[o++] = c; I[o++] = ab; I[o++] = bc; I[o++] = ca;
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
-  g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
-  g.setIndex(new THREE.BufferAttribute(I, 1));
-  return g;
-}
 function prepara(geo, escala = true) {
   if (!geo.index) geo = mergeVertices(geo);
   geo.computeBoundingBox();
@@ -251,12 +206,11 @@ function carregaCorpo(nome) {
     // só posição e normal: a costura do UV não parte a pele em pedaços
     for (const k of Object.keys(geo.attributes)) if (k !== "position" && k !== "normal") geo.deleteAttribute(k);
     geo = mergeVertices(geo.index ? geo.toNonIndexed() : geo, 1e-5);
-    const leve = prepara(geo);
-    const info = prepara(malhaFina(leve.geo), false);
-    const m = new THREE.Mesh(info.geo, pele); m.castShadow = true;
+    // leve de propósito: 74 mil triângulos. O corte fino da tinta é por pixel (no material), não depende da malha.
+    const info = prepara(geo);
+    const m = new THREE.Mesh(info.geo, pele);
     if (DEBUG) pintaZonas(info.geo, nome);
-    // malha: a fina, que aparece; raioMalha: a leve, para os raios (4x mais rápida)
-    ok({ malha: m, raioMalha: new THREE.Mesh(leve.geo, pele), ...info });
+    ok({ malha: m, raioMalha: m, ...info });
   }, undefined, erro)));
 }
 
@@ -488,6 +442,7 @@ function decal(q, w, h, tex) {
   const ex = tex ? tex.image.width : 1, ey = tex ? tex.image.height : 1, mx = tex ? PAD / ex : 0, my = tex ? PAD / ey : 0;
   // desenho travado no braço: abaixo da axila, só a pele do braço (o lado do tronco fica limpo)
   const soBraco = q.trava && q.trava.braco, MB = MED[corpoAtual], sb = ALTURA / MB.H;
+  const soTronco = !!(q.cil && q.trava && q.trava.envolve === "tronco");
   const sgP = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, soPerna = !!(q.trava && sgP && q.p.y / sb < MB.virilha);
   const corte = q.cil ? -2 : q.plano ? CORTE_PLANO : CORTE_LIVRE, qn = q.n;
   for (const t of fila) {
@@ -499,6 +454,8 @@ function decal(q, w, h, tex) {
     if (soBraco) { const cy = cen[t * 3 + 1] / sb, cx = Math.abs(cen[t * 3] / sb); if (cy < MB.axila && cx < interp(MB.braco, cy)) continue; }
     // desenho travado numa perna: abaixo da virilha, só a pele dessa perna (a de dentro da outra perna fica limpa)
     if (soPerna && cen[t * 3 + 1] / sb < MB.virilha && cen[t * 3] * sgP < .004) continue;
+    // desenho que dá a volta no tronco: só o tronco (o braço e a mão ao lado ficam limpos; a coxa também)
+    if (soTronco) { const cy = cen[t * 3 + 1] / sb, cx = Math.abs(cen[t * 3] / sb); if (cy < MB.virilha - .07 || (cy < MB.axila && cx > interp(MB.braco, cy) - .004)) continue; }
     let umin = 9, umax = -9, vmin = 9, vmax = -9;
     for (let k = 0; k < 3; k++) {
       v3.fromBufferAttribute(pos, idx[t * 3 + k]); if (q.cil) localCil(v3, q, l); else local(v3, q, E, l);
@@ -564,6 +521,39 @@ function escolhe(i) {
 /* ---------- desenho com local certo (trava no JSON do cliente): o tatuador só faz aquela peça naquele lugar ----------
    trava: { lado: "d" | "e" | "c", ref: medida do corpo (MED), d: deslocamento na altura, x: afastamento do meio,
             perna: true acha o meio da perna naquela altura, braco: true o meio do braço, dentro: puxa para o meio do corpo, dir: 0 frente / 90 lateral de fora, cm, giro } */
+// Corte horizontal da malha numa altura: os segmentos (x,z) da pele naquele nível. Substitui centenas de raios
+// por um passe só pelos triângulos (antes, um desenho travado levava segundos; agora, milissegundos).
+const fatias = new Map();
+function fatia(y) {
+  const chave = corpoAtual + ":" + Math.round(y * 2000);
+  let f = fatias.get(chave); if (f) return f;
+  const pos = corpoInfo.geo.attributes.position.array, ix = corpoInfo.geo.index.array, seg = [], pt = [];
+  for (let t = 0; t < ix.length; t += 3) {
+    const a = ix[t] * 3, b = ix[t + 1] * 3, c = ix[t + 2] * 3, ya = pos[a + 1] - y, yb = pos[b + 1] - y, yc = pos[c + 1] - y;
+    if ((ya > 0 && yb > 0 && yc > 0) || (ya < 0 && yb < 0 && yc < 0)) continue;
+    pt.length = 0;
+    for (const [p, q, yp, yq] of [[a, b, ya, yb], [b, c, yb, yc], [c, a, yc, ya]]) {
+      if ((yp > 0) === (yq > 0) || yp === yq) continue;
+      const k = yp / (yp - yq); pt.push(pos[p] + (pos[q] - pos[p]) * k, pos[p + 2] + (pos[q + 2] - pos[p + 2]) * k);
+    }
+    if (pt.length === 4) seg.push(pt[0], pt[1], pt[2], pt[3]);
+  }
+  f = new Float32Array(seg);
+  if (fatias.size > 400) fatias.clear();
+  fatias.set(chave, f); return f;
+}
+// tem pele em (x, y), vista de frente? (o mesmo que um raio de frente bater no corpo)
+function temPele(x, y) { const f = fatia(y); for (let i = 0; i < f.length; i += 4) if ((f[i] - x) * (f[i + 2] - x) <= 0) return true; return false; }
+// z da pele em (x, y): a primeira de frente (frente = true) ou a primeira de trás
+function zPele(x, y, frente) {
+  const f = fatia(y); let z = frente ? -9 : 9;
+  for (let i = 0; i < f.length; i += 4) {
+    const x1 = f[i], x2 = f[i + 2]; if ((x1 - x) * (x2 - x) > 0) continue;
+    const zz = x1 === x2 ? Math.max(f[i + 1], f[i + 3]) : f[i + 1] + (f[i + 3] - f[i + 1]) * (x - x1) / (x2 - x1);
+    z = frente ? Math.max(z, zz) : Math.min(z, zz);
+  }
+  return Math.abs(z) < 9 ? z : null;
+}
 function pontoTravado(t, ladoQ) {
   const M = MED[corpoAtual], s = ALTURA / M.H, y = (M[t.ref] + (t.d || 0)) * s;
   const sg = ladoQ === "e" ? 1 : ladoQ === "d" ? -1 : 0;
@@ -571,8 +561,7 @@ function pontoTravado(t, ladoQ) {
   if (t.perna && sg) {   // varre de frente, de dentro pra fora: o primeiro trecho com pele é a perna (a mão ao lado da coxa fica de fora)
     const xs = [];
     for (let k = .004; k < .32; k += .003) {
-      raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
-      if (raio.intersectObject(malha, false).length) xs.push(k);
+      if (temPele(sg * k, y)) xs.push(k);
       else if (xs.length) break;
     }
     if (xs.length) x = sg * (xs[0] + xs[xs.length - 1]) / 2;
@@ -580,8 +569,7 @@ function pontoTravado(t, ladoQ) {
   if (t.braco && sg) {   // de frente, o último trecho com pele daquele lado é o braço (o tronco vem antes)
     let run = [], ant = -1;
     for (let k = .02; k < .5; k += .003) {
-      raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
-      if (raio.intersectObject(malha, false).length) { if (k - ant > .008) run = []; run.push(k); ant = k; }
+      if (temPele(sg * k, y)) { if (k - ant > .008) run = []; run.push(k); ant = k; }
     }
     if (run.length) x = sg * (run[0] + run[run.length - 1]) / 2;
   }
@@ -597,28 +585,37 @@ function colocaTravada(q) {
   const p = pontoTravado(q.trava, q.lado); if (!p) return false;
   const t = q.trava, sg = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, a = (t.dir || 0) * Math.PI / 180;
   q.p.copy(p); q.n = new THREE.Vector3(sg * Math.sin(a), 0, Math.cos(a)).normalize(); q.plano = true;
-  q.cil = t.perna && sg && t.envolve !== false ? eixoPerna(q, sg) : null;
+  q.cil = t.envolve === "tronco" ? eixoTronco(q) : t.perna && sg && t.envolve !== false ? eixoPerna(q, sg) : null;
   return true;
 }
 // Tribal de perna: em vez de projetar reto (comprime na lateral), a arte dá a volta na perna como pele de verdade.
 // O eixo é o meio da perna, medido de 3 em 3 cm (frente/trás e dentro/fora), então acompanha joelho e canela.
 function centroPerna(y, sg) {
   const xs = [];
-  for (let k = .004; k < .32; k += .003) {
-    raio.set(new THREE.Vector3(sg * k, y, 2), new THREE.Vector3(0, 0, -1));
-    if (raio.intersectObject(malha, false).length) xs.push(k); else if (xs.length) break;
-  }
+  for (let k = .004; k < .32; k += .003) { if (temPele(sg * k, y)) xs.push(k); else if (xs.length) break; }
   if (!xs.length) return null;
-  const x = sg * (xs[0] + xs[xs.length - 1]) / 2;
-  raio.set(new THREE.Vector3(x, y, 2), new THREE.Vector3(0, 0, -1)); const f = raio.intersectObject(malha, false)[0];
-  raio.set(new THREE.Vector3(x, y, -2), new THREE.Vector3(0, 0, 1)); const b = raio.intersectObject(malha, false)[0];
-  return f && b ? { y, x, z: (f.point.z + b.point.z) / 2 } : null;
+  const x = sg * (xs[0] + xs[xs.length - 1]) / 2, f = zPele(x, y, true), b = zPele(x, y, false);
+  return f !== null && b !== null ? { y, x, z: (f + b) / 2 } : null;
 }
 function eixoPerna(q, sg) {
   const { h } = dims(q), M = MED[corpoAtual], s = ALTURA / M.H, topo = (M.virilha - .03) * s;
   const pts = [];
   for (let y = Math.max(.04, q.p.y - h * .75 - .03); y <= Math.min(topo, q.p.y + h * .75 + .03); y += .03) { const c = centroPerna(y, sg); if (c) pts.push(c); }
   return pts.length > 1 ? { pts, th0: Math.atan2(q.n.x, q.n.z) } : null;
+}
+// Tribal de quadril/costela (trava.envolve: "tronco"): a arte dá a volta no tronco em vez de acabar seca na lateral.
+// Eixo: o meio do tronco em cada altura (de um lado a outro da cintura, sem os braços; frente e costas).
+function centroTronco(y) {
+  const borda = (sg) => { let ult = 0; for (let k = 0; k < .4; k += .004) { if (temPele(sg * k, y)) ult = k; else if (k > .02) break; } return ult; };
+  const a = borda(1), b = borda(-1); if (!a || !b) return null;
+  const x = (a - b) / 2;
+  const f = zPele(x, y, true), t = zPele(x, y, false);
+  return f !== null && t !== null ? { y, x, z: (f + t) / 2 } : null;
+}
+function eixoTronco(q) {
+  const { h } = dims(q), M = MED[corpoAtual], s = ALTURA / M.H, pts = [];
+  for (let y = Math.max((M.virilha + .02) * s, q.p.y - h * .75); y <= Math.min(M.axila * s, q.p.y + h * .75); y += .03) { const c = centroTronco(y); if (c) pts.push(c); }
+  return pts.length > 1 ? { pts, th0: Math.atan2(q.p.x - centroEm({ pts }, q.p.y).x, q.p.z - centroEm({ pts }, q.p.y).z) } : null;
 }
 function centroEm(cil, y) {
   const P = cil.pts;
@@ -685,7 +682,7 @@ function tira(i) {
   pedeQuadro();
 }
 function atualizaLista() {
-  bPede.disabled = bSalva.disabled = !pecas.length;
+  bPede.disabled = bSalva.disabled = !pecas.length; if (bLink) bLink.disabled = !pecas.length;
   if (!pecas.length) { lista.innerHTML = '<li class="pv-vazio">Nenhum desenho no corpo ainda.</li>'; return; }
   // cartões iguais, centrados: miniatura no papel, nome, local e tamanho
   const sel = pecas[atual];
@@ -983,7 +980,7 @@ async function montagem() {
 function textoPedido() {
   const l = unicas().map((q, i) => `${i + 1}. ${q.nome}\n   ${nomeZona(q)}${q.grupo ? " (arte completa, local fixo)" : ` · ~${q.cm} cm`}`);
   const ola = DEMO ? "Olá, Seu Estúdio!" : (C.textos && C.textos.ola) || `Olá, ${C.nome}!`;
-  return `${ola} Montei no provador do site e queria orçar:\n\n${l.join("\n")}\n\nA imagem da montagem vai junto.`;
+  return `${ola} Montei no provador do site e queria orçar:\n\n${l.join("\n")}\n\nA imagem da montagem vai junto. Montagem no 3D: ${linkMontagem()}`;
 }
 function avisa(t) { aviso.textContent = t; aviso.hidden = false; clearTimeout(avisa.t); avisa.t = setTimeout(() => (aviso.hidden = true), 6000); }
 const arquivo = () => `${DEMO ? "provador" : C.slug}-montagem.png`;
@@ -1024,6 +1021,58 @@ bPede.addEventListener("click", async () => {
   avisa(`A imagem foi salva e o pedido copiado. Na conversa com ${C.nome}, cole o texto e anexe a imagem.`);
 });
 
+/* ---------- link da montagem: o estado inteiro vai no endereço (?m=), sem servidor ----------
+   Cada desenho: [id, cm, giro, espelhado, cor, x, y, z, nx, ny, nz]. Travado e conjunto não precisam do ponto:
+   o local vem da trava (o lado sai do "espelhado"). Livre: ponto e normal da pele, em milímetros e centésimos. */
+const b64 = (t) => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const deB64 = (t) => decodeURIComponent(escape(atob(t.replace(/-/g, "+").replace(/_/g, "/"))));
+function codigoMontagem() {
+  const r = (v, k) => Math.round(v * k);
+  const l = unicas().map((q) => {
+    const id = q.grupo ? q.grupo.id : q.id, base = [id, q.cm, Math.round(q.giro), q.flip ? 1 : 0, q.cor === "base" ? 0 : q.cor];
+    return q.trava || q.grupo ? base : base.concat(r(q.p.x, 1000), r(q.p.y, 1000), r(q.p.z, 1000), r(q.n.x, 100), r(q.n.y, 100), r(q.n.z, 100));
+  });
+  return b64(JSON.stringify({ v: 1, c: corpoAtual === "masculino" ? "m" : "f", p: l }));
+}
+function baseDoLink() {
+  if (VITRINE) { try { if (parent.location.origin === location.origin) return parent.location.origin + parent.location.pathname; } catch (e) {} }
+  return location.origin + location.pathname;
+}
+const linkMontagem = () => `${baseDoLink()}?m=${codigoMontagem()}${VITRINE ? "#provador" : ""}`;
+async function abreMontagem(cod) {
+  let d; try { d = JSON.parse(deB64(cod)); } catch (e) { return avisa("Esse link de montagem não abriu. Monte de novo por aqui."); }
+  if (!d || !Array.isArray(d.p)) return;
+  ativa();
+  for (let n = 0; (!malha || !FL.length) && n < 300; n++) await new Promise((ok) => setTimeout(ok, 50));
+  const corpo = d.c === "m" ? "masculino" : "feminino";
+  if (corpo !== corpoAtual) await trocaCorpo(corpo);
+  for (const it of d.p) {
+    const [id, cm, giro, esp, cor, x, y, z, nx, ny, nz] = it, f = FL.find((k) => k.id === id); if (!f) continue;
+    const antes = pecas.length;
+    if (f.partes) await poeConjunto(f);
+    else if (f.trava) await poe(f, centroDaTela());
+    else {
+      const n = new THREE.Vector3(nx, ny, nz).divideScalar(100).normalize(), p0 = new THREE.Vector3(x, y, z).divideScalar(1000);
+      raio.set(p0.clone().addScaledVector(n, .12), n.clone().negate());
+      const h = raio.intersectObject(malha, false)[0];
+      await poe(f, h ? h.point : p0);
+    }
+    const q = pecas[antes]; if (!q) continue;
+    if (esp) espelha(q);
+    for (const m of membros(q)) { if (cor && (cor === "original" || (CORES && CORES[cor]))) m.cor = cor; }
+    if (!q.trava && !q.grupo) q.giro = giro || 0;
+    if (cm) mudaTam(q, cm);
+    membros(q).forEach(desenha);
+  }
+  escolhe(-1); atualizaLista(); mostraVista("f");
+}
+bLink && bLink.addEventListener("click", async () => {
+  const url = linkMontagem();
+  if (TOQUE && navigator.share) { try { await navigator.share({ url, title: `Montagem · ${C.nome}` }); return; } catch (e) { if (e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(url); avisa("Link copiado. Quem abrir vê a mesma montagem no corpo 3D."); }
+  catch (e) { prompt("Copie o link da montagem:", url); }
+});
+
 /* ---------- depuração: ?zonas pinta cada região ---------- */
 function pintaZonas(geo, nome) {
   const ant = corpoAtual; corpoAtual = nome;
@@ -1041,7 +1090,7 @@ function pintaZonas(geo, nome) {
 }
 window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(VIS[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista,
   // auditoria (tools/auditoria.js): fotografa cada desenho de vários ângulos
-  renderer, cena, luzes, FL: () => FL, poeF: (f, p) => poe(f, p), tira, escolhe, trocaCorpo, pontoTravado, centroDaTela, distanciaInteira, mostraParte };
+  renderer, cena, luzes, FL: () => FL, poeF: (f, p) => poe(f, p), tira, escolhe, codigoMontagem, abreMontagem, linkMontagem, trocaCorpo, pontoTravado, centroDaTela, distanciaInteira, mostraParte };
 
 /* ---------- início ---------- */
 palco.classList.add("vazio");
@@ -1056,7 +1105,8 @@ function arrumaTrilho() {
 mq.addEventListener("change", arrumaTrilho); arrumaTrilho();
 ajustaTamanho();
 requestAnimationFrame(quadro);
-fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; VIS = fl.filter((f) => !f.oculto); montaGaveta(); if (Q.get("d")) prova(Q.get("d")); });
+fetch(`${DIR}flashes.json?v=${window.PV_V || 1}`).then((r) => r.json()).then((fl) => { FL = fl; VIS = fl.filter((f) => !f.oculto); montaGaveta(); if (Q.get("d")) prova(Q.get("d")); const m = Q.get("m") || mDeFora(); if (m) abreMontagem(m); });
+function mDeFora() { if (!VITRINE) return null; try { return new URLSearchParams(parent.location.search).get("m"); } catch (e) { return null; } }
 /* ---------- desenho pedido de fora: ?d=<id> ou postMessage({manequim:1, provar:<id>}) do site do cliente ---------- */
 async function prova(id) {
   const f = FL.find((x) => x.id === id); if (!f) return;

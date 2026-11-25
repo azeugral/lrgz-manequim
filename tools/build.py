@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "32"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "35"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -104,6 +104,7 @@ MOLDE_PV = """<!doctype html>
 <symbol id="certo" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
 <symbol id="mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 <symbol id="menos" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="elo" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
 <symbol id="baixa" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></symbol>
 </svg>
 <header class="topo"><a id="insta" target="_blank" rel="noopener" hidden></a><div class="marca"><img id="logo" alt=""><strong id="marca"></strong></div><a id="voltar" hidden></a></header>
@@ -140,7 +141,7 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-mont">
 <h2 class="pv-tit"><b></b>Sua montagem</h2>
 <ul class="pv-lista" id="lista"><li class="pv-vazio">Nenhum desenho no corpo ainda.</li></ul>
-<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button></div>
+<div class="pv-fim"><button type="button" class="pv-btn" id="b-pede" disabled><svg><use href="#zap"/></svg><span>Pedir orçamento</span></button><button type="button" class="pv-btn pv-vazado" id="b-salva" disabled><svg><use href="#baixa"/></svg><span>Salvar imagem</span></button><button type="button" class="pv-btn pv-vazado" id="b-link" disabled><svg><use href="#elo"/></svg><span>Copiar link da montagem</span></button></div>
 <p class="pv-nota">Tamanho estimado para um corpo de 1,70&nbsp;m. <span id="nota-quem"></span> ajusta tudo com você antes de tatuar.</p>
 </div>
 </aside>
