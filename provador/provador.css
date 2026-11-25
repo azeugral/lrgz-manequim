@@ -62,6 +62,10 @@
 .pv-seg button[aria-pressed="true"] { background: var(--destaque); color: var(--sobre-destaque); }
 .pv-vistas { position: absolute; z-index: 3; top: 16px; left: 50%; transform: translateX(-50%); }
 .pv-vistas button { width: 84px; padding: 0; }
+/* partes do corpo: coluna na lateral do palco, a câmera vai até a parte */
+.pv-partes { position: absolute; z-index: 3; left: 16px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.pv-partes button { width: 76px; padding: 0; }
+.pv-partes button + button { box-shadow: 0 -1px 0 var(--linha); }
 
 /* base: menos | corpo | mais, centrada */
 .pv-base { position: absolute; z-index: 3; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; }
@@ -174,6 +178,8 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
   .pv-legenda p { font-size: 10px; letter-spacing: .08em; }
   .pv-vistas { top: 12px; }
   .pv-vistas button { width: clamp(70px, 22vw, 84px); }
+  .pv-partes { left: 10px; }
+  .pv-partes button { width: 62px; height: 34px; }
   .pv-base { bottom: 12px; gap: 5px; }
   .pv-corpos button { width: clamp(82px, 25vw, 104px); }
   .pv-seg button { font-size: 10px; letter-spacing: .07em; height: 38px; }
@@ -220,7 +226,10 @@ body.pv-arrasta, body.pv-arrasta * { cursor: grabbing !important; }
 .pv-capa p { margin: 0; max-width: 24ch; font: 500 11px/1.5 var(--f-rotulo); letter-spacing: .12em; text-transform: uppercase; color: var(--texto); text-shadow: 0 1px 12px rgba(0, 0, 0, .9); }
 .pv-palco.ativo .pv-capa { opacity: 0; visibility: hidden; pointer-events: none; }
 .pv-vistas, .pv-base { transition: opacity .5s var(--ease); }
-.pv-palco:not(.ativo) .pv-vistas, .pv-palco:not(.ativo) .pv-base { opacity: 0; pointer-events: none; }
+.pv-partes { transition: opacity .5s var(--ease); }
+.pv-palco:not(.ativo) .pv-vistas, .pv-palco:not(.ativo) .pv-base, .pv-palco:not(.ativo) .pv-partes { opacity: 0; pointer-events: none; }
+/* celular com peça escolhida: a barra de ajuste ocupa a base; as partes saem para não brigar */
+@media (max-width: 1080px) { .pv-palco.sel .pv-partes { opacity: 0; pointer-events: none; } }
 .pv-palco.carregando .pv-capa { opacity: 0; pointer-events: none; }
 
 /* ---------- barra de ajuste dentro do palco (só uma coluna) e faixa de disponíveis ---------- */

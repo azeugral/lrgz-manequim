@@ -165,6 +165,18 @@ cena.add(chave, chave.target, preenche, preenche.target, contra, contra.target);
   const chao = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
   chao.rotation.x = -Math.PI / 2; chao.position.y = .002; cena.add(chao);
 }
+// sombra de verdade no chão: luz fixa de cima (estúdio), o corpo projeta, o chão só recebe a sombra
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+{
+  const sol = new THREE.DirectionalLight(0xffffff, .45);
+  sol.position.set(.7, 3.4, 1.4); sol.target.position.set(0, .85, 0);
+  sol.castShadow = true; sol.shadow.mapSize.set(2048, 2048);
+  Object.assign(sol.shadow.camera, { left: -.9, right: .9, top: 1.2, bottom: -1.2, near: 1, far: 6 });
+  sol.shadow.bias = -.0004; sol.shadow.normalBias = .01;
+  const piso = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.ShadowMaterial({ color: 0x1a140e, opacity: .2 }));
+  piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true;
+  cena.add(sol, sol.target, piso);
+}
 
 const pele = new THREE.MeshStandardMaterial({ color: 0xe9e3da, roughness: .6, metalness: 0, vertexColors: DEBUG });
 const controles = new OrbitControls(camera, renderer.domElement);
@@ -172,12 +184,45 @@ Object.assign(controles, { enableDamping: true, dampingFactor: .09, rotateSpeed:
 controles.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 
 /* ---------- corpos ---------- */
-const corpos = {}; let corpoAtual = "feminino", malha = null, corpoInfo = null;
+const corpos = {}; let corpoAtual = "feminino", malha = null, corpoVis = null, corpoInfo = null;
 const carregador = new GLTFLoader();
-function prepara(geo) {
+// Malha fina: cada triângulo vira 4, e o ponto novo de cada aresta sai da reta e segue a curva da pele
+// (tesselação de Phong). Os vértices originais não mudam, então medidas e travas valem igual.
+// A tinta passa a ter ~4x mais pontos para acompanhar o corpo; os raios (toque, travas) seguem na malha leve.
+function malhaFina(geo) {
+  const pos = geo.attributes.position, nor = geo.attributes.normal, ix = geo.index.array, nv = pos.count;
+  const arestas = new Map(), P = [], N = [];
+  for (let i = 0; i < nv; i++) { P.push(pos.getX(i), pos.getY(i), pos.getZ(i)); N.push(nor.getX(i), nor.getY(i), nor.getZ(i)); }
+  const A = .75;
+  const meio = (a, b) => {
+    const k = a < b ? a * nv + b : b * nv + a; let m = arestas.get(k);
+    if (m !== undefined) return m;
+    const ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2], bx = P[b * 3], by = P[b * 3 + 1], bz = P[b * 3 + 2];
+    const mx = (ax + bx) / 2, my = (ay + by) / 2, mz = (az + bz) / 2;
+    const nax = N[a * 3], nay = N[a * 3 + 1], naz = N[a * 3 + 2], nbx = N[b * 3], nby = N[b * 3 + 1], nbz = N[b * 3 + 2];
+    const da = (mx - ax) * nax + (my - ay) * nay + (mz - az) * naz, db = (mx - bx) * nbx + (my - by) * nby + (mz - bz) * nbz;
+    const px = mx - (da * nax + db * nbx) / 2, py = my - (da * nay + db * nby) / 2, pz = mz - (da * naz + db * nbz) / 2;
+    P.push(mx + (px - mx) * A, my + (py - my) * A, mz + (pz - mz) * A);
+    let nx = nax + nbx, ny = nay + nby, nz = naz + nbz; const l = Math.hypot(nx, ny, nz) || 1;
+    N.push(nx / l, ny / l, nz / l);
+    m = P.length / 3 - 1; arestas.set(k, m); return m;
+  };
+  const nt = Math.floor(geo.index.count / 3), I = new Uint32Array(nt * 12);
+  for (let t = 0, o = 0; t < nt * 3; t += 3) {
+    const a = ix[t], b = ix[t + 1], c = ix[t + 2], ab = meio(a, b), bc = meio(b, c), ca = meio(c, a);
+    I[o++] = a; I[o++] = ab; I[o++] = ca; I[o++] = ab; I[o++] = b; I[o++] = bc;
+    I[o++] = ca; I[o++] = bc; I[o++] = c; I[o++] = ab; I[o++] = bc; I[o++] = ca;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
+  g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
+  g.setIndex(new THREE.BufferAttribute(I, 1));
+  return g;
+}
+function prepara(geo, escala = true) {
   if (!geo.index) geo = mergeVertices(geo);
   geo.computeBoundingBox();
-  const s = ALTURA / geo.boundingBox.max.y;
+  const s = escala ? ALTURA / geo.boundingBox.max.y : 1;
   geo.scale(s, s, s);
   if (!geo.attributes.normal) geo.computeVertexNormals();
   geo.computeBoundingBox(); geo.computeBoundingSphere();
@@ -200,10 +245,15 @@ function prepara(geo) {
 function carregaCorpo(nome) {
   return corpos[nome] || (corpos[nome] = new Promise((ok, erro) => carregador.load(`${D3}${nome}.glb?v=1`, (g) => {
     let geo = null; g.scene.traverse((o) => { if (o.isMesh && !geo) { o.updateWorldMatrix(true, false); geo = o.geometry.clone().applyMatrix4(o.matrixWorld); } });
-    const info = prepara(geo);
-    const m = new THREE.Mesh(info.geo, pele);
+    // só posição e normal: a costura do UV não parte a pele em pedaços
+    for (const k of Object.keys(geo.attributes)) if (k !== "position" && k !== "normal") geo.deleteAttribute(k);
+    geo = mergeVertices(geo.index ? geo.toNonIndexed() : geo, 1e-5);
+    const leve = prepara(geo);
+    const info = prepara(malhaFina(leve.geo), false);
+    const m = new THREE.Mesh(info.geo, pele); m.castShadow = true;
     if (DEBUG) pintaZonas(info.geo, nome);
-    ok({ malha: m, ...info });
+    // malha: a fina, que aparece; raioMalha: a leve, para os raios (4x mais rápida)
+    ok({ malha: m, raioMalha: new THREE.Mesh(leve.geo, pele), ...info });
   }, undefined, erro)));
 }
 
@@ -238,9 +288,32 @@ const ALVO = new THREE.Vector3(0, .87, 0);
 function mostraVista(v, rapido) {
   vista = v;
   $$(".pv-vistas button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.vista === v));
+  $$(".pv-partes button").forEach((b) => b.setAttribute("aria-pressed", "false"));
   vai(VISTAS[v], ALVO, distanciaInteira(), rapido);
 }
 $$(".pv-vistas button").forEach((b) => b.addEventListener("click", () => mostraVista(b.dataset.vista)));
+// partes do corpo: a câmera chega perto (do lado que já está virado para ela) e enquadra a parte inteira
+function enquadra(alto, largo) {
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  return Math.max(alto / 2 / t, largo / 2 / t / camera.aspect) * 1.12;
+}
+function mostraParte(nome) {
+  if (!malha) return;
+  const M = MED[corpoAtual], s = ALTURA / M.H;
+  const off = camera.position.clone().sub(controles.target), fz = off.z >= 0 ? 1 : -1, sx = off.x >= 0 ? 1 : -1;
+  $$(".pv-vistas button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  $$(".pv-partes button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.parte === nome));
+  if (nome === "rosto") return vai([0, .05, fz], new THREE.Vector3(0, (M.queixo + .1) * s, 0), enquadra(.36, .3));
+  if (nome === "tronco") return vai([0, .04, fz], new THREE.Vector3(0, (M.axila + M.virilha) / 2 * s + .03, 0), enquadra((M.pesc - M.virilha + .08) * s, .5));
+  if (nome === "braco") {
+    // o meio do braço sai de um raio na altura do cotovelo (igual às travas), não de uma medida fixa
+    const p = pontoTravado({ ref: "cotovelo", d: .04, braco: true }, sx > 0 ? "e" : "d");
+    const x = p ? p.x : sx * .2, y = (M.axila + M.pulso) / 2 * s;
+    return vai([sx * .45, .05, fz], new THREE.Vector3(x, y, 0), enquadra((M.axila - M.pulso + .16) * s, .34));
+  }
+  if (nome === "perna") return vai([sx * .25, .03, fz], new THREE.Vector3(0, M.virilha / 2 * s + .01, 0), enquadra((M.virilha + .1) * s, .5) * 1.22);   // as barras de cima e de baixo cobrem parte do palco
+}
+$$(".pv-partes button").forEach((b) => b.addEventListener("click", () => mostraParte(b.dataset.parte)));
 function zoom(f) {
   const off = camera.position.clone().sub(controles.target);
   const d = THREE.MathUtils.clamp(off.length() * f, controles.minDistance, controles.maxDistance);
@@ -263,7 +336,7 @@ new ResizeObserver(ajustaTamanho).observe(palco);
 let precisa = true;
 const pedeQuadro = () => (precisa = true);
 controles.addEventListener("change", pedeQuadro);
-controles.addEventListener("start", () => $$(".pv-vistas button").forEach((b) => b.setAttribute("aria-pressed", "false")));
+controles.addEventListener("start", () => $$(".pv-vistas button, .pv-partes button").forEach((b) => b.setAttribute("aria-pressed", "false")));
 function luzes() {
   // a luz principal acompanha a câmera, então qualquer lado do corpo fica bem iluminado
   const dir = camera.position.clone().sub(controles.target).normalize();
@@ -354,8 +427,30 @@ function orientacao(q) {
 // A peça "abraça" a pele: cada vértice perto do ponto ganha coordenadas no plano da peça, mas com a distância
 // real (corda) até o centro, não a projetada. Num braço fino a arte dá a volta em vez de ser cortada na lateral.
 let carimbo = 1;
-// projeção plana: a tinta some aos poucos onde a pele vira de lado (cos entre a pele e o ângulo do mockup)
-const CORTE_PLANO = .18, CHEIO_PLANO = .5;
+// projeção plana: a tinta acaba seca onde a pele vira de lado (cos entre a pele e o ângulo do mockup).
+// O corte é feito por pixel com a normal suave da pele: a borda sai lisa, sem degrau de triângulo e sem esfumado.
+const CORTE_PLANO = .16;
+// desenho livre (abraça a pele): dá a volta até pouco depois da lateral; a parte de trás do braço/perna fica limpa
+const CORTE_LIVRE = -.2;
+function materialTinta(op) {
+  const m = new THREE.MeshStandardMaterial(op);
+  m.userData.u = { uQn: { value: new THREE.Vector3(0, 0, 1) }, uCorte: { value: -2 } };
+  m.onBeforeCompile = (s) => {
+    Object.assign(s.uniforms, m.userData.u);
+    s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vNo;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvNo = normal;");
+    s.fragmentShader = s.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vNo;\nuniform vec3 uQn;\nuniform float uCorte;")
+      .replace("#include <map_fragment>", `#include <map_fragment>
+  if (uCorte > -1.0) {
+    float dd = dot(normalize(vNo), uQn), aw = max(fwidth(dd), 1e-4);
+    float k = smoothstep(uCorte - aw, uCorte + aw, dd);   // 1 pixel de antisserrilhado, nada mais
+    if (k <= 0.0) discard;
+    diffuseColor.a *= k;
+  }`);
+  };
+  m.customProgramCacheKey = () => "tinta1";
+  return m;
+}
 function eixos(q) {
   const r = orientacao(q);
   return { X: new THREE.Vector3(1, 0, 0).applyQuaternion(r), Y: new THREE.Vector3(0, 1, 0).applyQuaternion(r) };
@@ -386,18 +481,21 @@ function decal(q, w, h, tex) {
       }
     }
   }
-  const P = [], N = [], U = [], C = [], v3 = new THREE.Vector3(), l = new THREE.Vector3(), uv = [0, 0, 0, 0, 0, 0];
+  const P = [], N = [], U = [], v3 = new THREE.Vector3(), l = new THREE.Vector3(), uv = [0, 0, 0, 0, 0, 0];
   const ex = tex ? tex.image.width : 1, ey = tex ? tex.image.height : 1, mx = tex ? PAD / ex : 0, my = tex ? PAD / ey : 0;
   // desenho travado no braço: abaixo da axila, só a pele do braço (o lado do tronco fica limpo)
   const soBraco = q.trava && q.trava.braco, MB = MED[corpoAtual], sb = ALTURA / MB.H;
-  const corte = q.plano ? CORTE_PLANO : -2, qn = q.n;
+  const sgP = q.lado === "e" ? 1 : q.lado === "d" ? -1 : 0, soPerna = !!(q.trava && sgP && q.p.y / sb < MB.virilha);
+  const corte = q.plano ? CORTE_PLANO : CORTE_LIVRE, qn = q.n;
   for (const t of fila) {
-    if (corte > -1) {
-      let d = 0;
-      for (let k = 0; k < 3; k++) { const v = idx[t * 3 + k]; d += nor.getX(v) * qn.x + nor.getY(v) * qn.y + nor.getZ(v) * qn.z; }
-      if (d / 3 < corte) continue;
+    if (corte > -1) {   // fora só o triângulo inteiro de lado; o corte fino é por pixel, no material (sem degrau nem borrão)
+      let d = -9;
+      for (let k = 0; k < 3; k++) { const v = idx[t * 3 + k]; d = Math.max(d, nor.getX(v) * qn.x + nor.getY(v) * qn.y + nor.getZ(v) * qn.z); }
+      if (d < corte) continue;
     }
     if (soBraco) { const cy = cen[t * 3 + 1] / sb, cx = Math.abs(cen[t * 3] / sb); if (cy < MB.axila && cx < interp(MB.braco, cy)) continue; }
+    // desenho travado numa perna: abaixo da virilha, só a pele dessa perna (a de dentro da outra perna fica limpa)
+    if (soPerna && cen[t * 3 + 1] / sb < MB.virilha && cen[t * 3] * sgP < .004) continue;
     let umin = 9, umax = -9, vmin = 9, vmax = -9;
     for (let k = 0; k < 3; k++) {
       v3.fromBufferAttribute(pos, idx[t * 3 + k]); local(v3, q, E, l);
@@ -409,8 +507,6 @@ function decal(q, w, h, tex) {
     for (let k = 0; k < 3; k++) {
       const v = idx[t * 3 + k], nx = nor.getX(v), ny = nor.getY(v), nz = nor.getZ(v);
       P.push(pos.getX(v) + nx * .0006, pos.getY(v) + ny * .0006, pos.getZ(v) + nz * .0006); N.push(nx, ny, nz);
-      const al = corte > -1 ? THREE.MathUtils.smoothstep(nx * qn.x + ny * qn.y + nz * qn.z, CORTE_PLANO, CHEIO_PLANO) : 1;
-      C.push(1, 1, 1, al);
       U.push(mx + uv[k * 2] * (1 - 2 * mx), my + uv[k * 2 + 1] * (1 - 2 * my));
     }
   }
@@ -418,13 +514,13 @@ function decal(q, w, h, tex) {
   g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
   g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
   g.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2));
-  g.setAttribute("color", new THREE.Float32BufferAttribute(C, 4));
   return g;
 }
 function desenha(q) {
   if (q.malha) { cena.remove(q.malha); q.malha.geometry.dispose(); }
   const { w, h } = dims(q);
   q.malha = new THREE.Mesh(decal(q, w, h, q.tex), q.mat);
+  q.mat.userData.u.uQn.value.copy(q.n); q.mat.userData.u.uCorte.value = q.plano ? CORTE_PLANO : CORTE_LIVRE;
   q.malha.renderOrder = 2 + pecas.indexOf(q);
   cena.add(q.malha);
   const orig = q.cor === "original";
@@ -526,7 +622,7 @@ async function poe(f, p, grupo) {
   if (f.colorido) { texCor = new THREE.CanvasTexture(t.cor); texCor.colorSpace = THREE.SRGBColorSpace; texCor.anisotropy = 8; }
   const cor0 = f.colorido ? "original" : "base";
   ativa();
-  const mat = new THREE.MeshStandardMaterial({ map: tex, color: "#ffffff", vertexColors: true, transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
+  const mat = materialTinta({ map: tex, color: "#ffffff", transparent: true, opacity: .94, roughness: .5, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const q = { id: f.id, nome: f.nome, r: f.r, colorido: !!f.colorido, cm: 12, giro: 0, flip: false, cor: cor0, p: p.clone(), n: null, tex, texCor, mat };
   q.n = normalEm(q.p, .05);
   if (grupo) { q.grupo = grupo; q.nome = grupo.nome; }
@@ -793,8 +889,8 @@ async function trocaCorpo(nome, primeira) {
   palco.classList.add("carregando");
   const info = await carregaCorpo(nome);
   if (corpoAtual !== nome) return;
-  if (malha) cena.remove(malha);
-  malha = info.malha; corpoInfo = info; cena.add(malha);
+  if (corpoVis) cena.remove(corpoVis);
+  malha = info.raioMalha; corpoVis = info.malha; corpoInfo = info; cena.add(corpoVis);
   palco.classList.remove("carregando"); carregando.hidden = true;
   for (const q of pecas) {
     if (q.trava && colocaTravada(q)) { desenha(q); continue; }
@@ -904,7 +1000,9 @@ function pintaZonas(geo, nome) {
   window.__zonas = Object.keys(mapa);
   corpoAtual = ant;
 }
-window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(VIS[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista };
+window.__provador = { angTela: (i) => { const q = pecas[i], a = naTela(q.p), b = naTela(q.p.clone().addScaledVector(eixos(q).Y, .04)); return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }, pecas, camera, controles, onde: (x, y, z, nx, ny, nz) => onde(new THREE.Vector3(x, y, z), new THREE.Vector3(nx, ny, nz)), poe: (i, x, y) => poe(VIS[i], tocaCorpo(x, y) || centroDaTela()), montagem, mostraVista,
+  // auditoria (tools/auditoria.js): fotografa cada desenho de vários ângulos
+  renderer, cena, luzes, FL: () => FL, poeF: (f, p) => poe(f, p), tira, escolhe, trocaCorpo, pontoTravado, centroDaTela, distanciaInteira, mostraParte };
 
 /* ---------- início ---------- */
 palco.classList.add("vazio");

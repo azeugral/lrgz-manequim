@@ -70,7 +70,7 @@ def pagina(c, base, inicio, og_url=""):
                         og="\n".join(og), icones=icones, fontes=fontes, skin=skin, base=base, inicio=inicio)
 
 
-PV_V = "28"   # subir a cada mudança no provador (js, css ou desenhos)
+PV_V = "31"   # subir a cada mudança no provador (js, css ou desenhos)
 MOLDE_PV = """<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -113,6 +113,7 @@ MOLDE_PV = """<!doctype html>
 <div class="pv-centro">
 <section class="pv-palco" id="palco" aria-label="Corpo 3D para provar os desenhos">
 <div class="pv-seg pv-vistas" role="group" aria-label="Vista do corpo"><button type="button" data-vista="f" aria-pressed="true">Frente</button><button type="button" data-vista="b" aria-pressed="false">Costas</button><button type="button" data-vista="l" aria-pressed="false">Lado</button></div>
+<div class="pv-seg pv-partes" role="group" aria-label="Ir para a parte do corpo"><button type="button" data-parte="rosto" aria-pressed="false">Rosto</button><button type="button" data-parte="tronco" aria-pressed="false">Tronco</button><button type="button" data-parte="braco" aria-pressed="false">Braço</button><button type="button" data-parte="perna" aria-pressed="false">Perna</button></div>
 <p class="pv-carregando" id="carregando">Carregando o corpo 3D</p>
 <div class="pv-capa" id="capa"><button type="button" class="pv-btn" id="pv-comecar"><svg><use href="#gira"/></svg><span>Começar</span></button><p>Gire o corpo e prove os desenhos na pele</p></div>
 <div class="pv-ferr" id="ferr" role="toolbar" aria-label="Ajustar o desenho escolhido"><button type="button" data-f="menor" aria-label="Diminuir"><svg><use href="#menos"/></svg><span>Menor</span></button><button type="button" data-f="maior" aria-label="Aumentar"><svg><use href="#mais"/></svg><span>Maior</span></button><button type="button" data-f="gira" aria-label="Girar 15 graus"><svg><use href="#roda"/></svg><span>Girar</span></button><button type="button" data-f="espelha" aria-label="Espelhar"><svg><use href="#espelha"/></svg><span>Espelhar</span></button><button type="button" data-f="tira" aria-label="Tirar do corpo"><svg><use href="#lixo"/></svg><span>Tirar</span></button><button type="button" data-f="ok" aria-label="Pronto"><svg><use href="#certo"/></svg><span>Pronto</span></button></div>
